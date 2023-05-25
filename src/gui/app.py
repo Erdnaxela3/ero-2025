@@ -2,12 +2,13 @@ import sys
 import osmnx as ox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QLineEdit, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QLineEdit, QLabel, QFrame, QTextEdit
 
 
-class MainWindow(QWidget):
-    def __init__(self):
-        super().__init__()
+class MainWindow(QMainWindow):
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+
         self.setWindowTitle("ero-2025")
         self.setMinimumSize(800, 600)
 
@@ -25,10 +26,11 @@ class MainWindow(QWidget):
             "Rivière-des-prairies-pointe-aux-trembles")
         self.plateau_button = QPushButton("Le Plateau-Mont-Royal")
 
-        self.start_button = QPushButton("Start")
+        self.recon_button = QPushButton("Drone Recon")
+        self.plow_button = QPushButton("Plow Area")
         self.quit_button = QPushButton("Quit")
 
-        # Connect button signals to their respective slots
+        # Connect button to set the area input
         self.outremont_button.clicked.connect(
             lambda: self.set_area("Outremont, Montreal, QC, Canada"))
         self.verdun_button.clicked.connect(
@@ -40,20 +42,29 @@ class MainWindow(QWidget):
         self.plateau_button.clicked.connect(lambda: self.set_area(
             "Le Plateau-Mont-Royal, Montreal, QC, Canada"))
 
-        self.start_button.clicked.connect(self.start)
+        self.recon_button.clicked.connect(self.start)
+        self.plow_button.clicked.connect(self.start)
         self.quit_button.clicked.connect(self.quit)
 
         # Create the layout for the side menu
         side_menu_layout = QVBoxLayout()
         side_menu_layout.addWidget(self.area_label)
         side_menu_layout.addWidget(self.area_input)
+
+        # Add separator line
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        side_menu_layout.addWidget(line)
+
         side_menu_layout.addWidget(self.outremont_button)
         side_menu_layout.addWidget(self.verdun_button)
         side_menu_layout.addWidget(self.saint_leonard_button)
         side_menu_layout.addWidget(self.rdp_button)
         side_menu_layout.addWidget(self.plateau_button)
         side_menu_layout.addStretch()
-        side_menu_layout.addWidget(self.start_button)
+        side_menu_layout.addWidget(self.recon_button)
+        side_menu_layout.addWidget(self.plow_button)
         side_menu_layout.addWidget(self.quit_button)
 
         # Create the left side menu widget
@@ -65,17 +76,24 @@ class MainWindow(QWidget):
         side_menu_widget.setLayout(side_menu_layout)
 
         # Create the network display area widget
-        self.network_display = QWidget()
-        self.network_display.setSizePolicy(
-            QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.figure = plt.figure()
+        self.network_display = FigureCanvas(self.figure)
+
+        # Create the text area widget
+        self.text_area = QTextEdit()
+        self.text_area.setMaximumWidth(350)
+        self.text_area.setReadOnly(True)
 
         # Create the main layout
         main_layout = QHBoxLayout()
         main_layout.addWidget(side_menu_widget)
         main_layout.addWidget(self.network_display)
+        main_layout.addWidget(self.text_area)
 
         # Set the main layout for the main window
-        self.setLayout(main_layout)
+        central_widget = QWidget()
+        central_widget.setLayout(main_layout)
+        self.setCentralWidget(central_widget)
 
         # Store the last area name for subsequent clicks on the "Start" button
         self.last_area = ""
@@ -85,38 +103,40 @@ class MainWindow(QWidget):
         QApplication.quit()
 
     def start(self):
-        # Retrieve the area name from the text input
-        area = self.area_input.text()
+        input_area = self.area_input.text()
 
-        # Check if the area has changed since the last click on the "Start" button
-        if area != self.last_area:
-            # Retrieve the street layout using osmnx
-            network = ox.graph_from_place(area, network_type='drive')
+        if self.last_area == input_area:
+            return
 
-            # Store the current area as the last area
-            self.last_area = area
+        self.last_area = input_area
 
-            # Clear the existing layout of the network display area
-            layout = self.network_display.layout()
-            if layout is not None:
-                while layout.count():
-                    item = layout.takeAt(0)
-                    widget = item.widget()
-                    if widget is not None:
-                        widget.setParent(None)
+        try:
+            network = ox.graph_from_place(input_area, network_type='drive')
+            stats = ox.stats.basic_stats(network)
+            stats_str = ""
+            for key, value in stats.items():
+                stats_str += f"{key}: {value}\n"
+        except ox.errors.PlaceNotFound:
+            self.area_input.clear()
+            self.area_input.setPlaceholderText(
+                "Invalid area: Please enter a valid area name")
+            return
 
-            # Create a new Figure and Canvas
-            fig = plt.figure()
-            canvas = FigureCanvas(fig)
+        self.text_area.setPlainText(stats_str)
+        self.update_plot_data(network)
 
-            # Plot the network on the Figure
-            ax = fig.add_subplot(111)
-            ox.plot_graph(network, node_color='black', ax=ax, show=False)
+    def update_plot_data(self, network):
+        self.figure.clear()
 
-            # Set the layout for the network display area
-            layout = QVBoxLayout(self.network_display)
-            layout.addWidget(canvas)
-            self.network_display.setLayout(layout)
+        ax = self.figure.add_subplot(111)
+        ox.plot_graph(network, ax=ax, node_color='black', node_size=3, show=False)
+
+        self.network_display.draw()
+
+    def clear_plot_data(self):
+        self.figure.clear()
+        self.network_display.draw()
+        self.text_area.clear()
 
     def set_area(self, area):
         self.area_input.setText(area)
