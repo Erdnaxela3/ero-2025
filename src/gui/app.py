@@ -2,7 +2,7 @@ import sys
 import osmnx as ox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy, QLineEdit, QLabel, QFrame, QTextEdit
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QHBoxLayout, QLineEdit, QLabel, QFrame, QTextEdit
 
 
 class MainWindow(QMainWindow):
@@ -129,7 +129,8 @@ class MainWindow(QMainWindow):
         self.figure.clear()
 
         ax = self.figure.add_subplot(111)
-        ox.plot_graph(network, ax=ax, node_color='black', node_size=3, show=False)
+        ox.plot_graph(network, ax=ax, node_color='black',
+                      node_size=3, show=False)
 
         self.network_display.draw()
 
