@@ -1,71 +1,131 @@
+import PIL.Image
+
 import sys
 import osmnx as ox
+
+import matplotlib
+matplotlib.use('Agg') # to avoid pop ups
+
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, \
         QWidget, QHBoxLayout, QLineEdit, QLabel, QFrame, QTextEdit
+from PyQt5.QtGui import QIntValidator
 
+import numpy as np
+
+OSMNX_NETWORK_TYPE = 'drive'
+OSMNX_NODE_SIZE = 1
+OSMNX_NODE_COLOR = 'black'
+QT_MINSIZE_WIDTH = 800
+QT_MINSIZE_HEIGHT = 600
+BIGGER_BUTTON_SCALE_FACTOR = 2
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
-        self.setWindowTitle("ero-2025")
-        self.setMinimumSize(800, 600)
+        self.animation_on = False
+        self.network = None
 
-        # Create the label for the text input
-        self.area_label = QLabel("Custom area")
-        # Create the text input
-        self.area_input = QLineEdit()
-        self.area_input.setPlaceholderText("Enter area name")
+        self.setWindowTitle("ero-2025")
+        self.setMinimumSize(QT_MINSIZE_WIDTH, QT_MINSIZE_HEIGHT)
 
         # Create the buttons
+        self.drone_recon_label = QLabel("Load Montréal")
+        self.montreal_button = QPushButton("Montréal")
+        BIGGER_BUTTON_HEIGHT = self.montreal_button.sizeHint().height() * BIGGER_BUTTON_SCALE_FACTOR
+
+        self.plow_area_label = QLabel("Load Subject Plow Area")
         self.outremont_button = QPushButton("Outremont")
         self.verdun_button = QPushButton("Verdun")
         self.saint_leonard_button = QPushButton("Saint-Léonard")
-        self.rdp_button = QPushButton(
-            "Rivière-des-prairies-pointe-aux-trembles")
+        self.rdp_button = QPushButton("Rivière-des-prairies-pointe-aux-trembles")
         self.plateau_button = QPushButton("Le Plateau-Mont-Royal")
 
+        self.area_label = QLabel("Load Custom area")
+        self.area_input = QLineEdit()
+        self.area_input.setPlaceholderText("Enter area name")
+        self.load_custom_button = QPushButton("Load Custom")
+
+        self.number_of_vehicle_label = QLabel("Vehicle number for plowing")
+        self.number_of_vehicle_input = QLineEdit()
+        self.number_of_vehicle_input.setValidator(QIntValidator())
+        self.number_of_vehicle_input.setPlaceholderText("Enter vehicle number")
+        self.number_of_vehicle_input.setText("1")
+
         self.recon_button = QPushButton("Drone Recon")
+        self.recon_button.setFixedHeight(BIGGER_BUTTON_HEIGHT)
         self.plow_button = QPushButton("Plow Area")
+        self.plow_button.setFixedHeight(BIGGER_BUTTON_HEIGHT)
         self.quit_button = QPushButton("Quit")
+        self.quit_button.setFixedHeight(BIGGER_BUTTON_HEIGHT)
 
         # Connect button to set the area input
+        self.montreal_button.clicked.connect(
+            lambda: self.load_area("Montreal, QC, Canada"))
         self.outremont_button.clicked.connect(
-            lambda: self.set_area("Outremont, Montreal, QC, Canada"))
+            lambda: self.load_area("Outremont, Montreal, QC, Canada"))
         self.verdun_button.clicked.connect(
-            lambda: self.set_area("Verdun, Montreal, QC, Canada"))
+            lambda: self.load_area("Verdun, Montreal, QC, Canada"))
         self.saint_leonard_button.clicked.connect(
-            lambda: self.set_area("Saint-Léonard, Montreal, QC, Canada"))
-        self.rdp_button.clicked.connect(lambda: self.set_area(
-            "Rivière-des-prairies-pointe-aux-trembles, Montreal, QC, Canada"))
-        self.plateau_button.clicked.connect(lambda: self.set_area(
-            "Le Plateau-Mont-Royal, Montreal, QC, Canada"))
+            lambda: self.load_area("Saint-Léonard, Montreal, QC, Canada"))
+        self.rdp_button.clicked.connect(
+            lambda: self.load_area("Rivière-des-prairies-pointe-aux-trembles, Montreal, QC, Canada"))
+        self.plateau_button.clicked.connect(
+            lambda: self.load_area("Le Plateau-Mont-Royal, Montreal, QC, Canada"))
 
-        self.recon_button.clicked.connect(self.start)
-        self.plow_button.clicked.connect(self.start)
+        self.load_custom_button.clicked.connect(self.load_area)
+        self.recon_button.clicked.connect(self.drone_recon)
+        self.plow_button.clicked.connect(self.plow_area)
         self.quit_button.clicked.connect(self.quit)
 
-        # Create the layout for the side menu
         side_menu_layout = QVBoxLayout()
-        side_menu_layout.addWidget(self.area_label)
-        side_menu_layout.addWidget(self.area_input)
+
+        side_menu_layout.addWidget(self.drone_recon_label)
+        side_menu_layout.addWidget(self.montreal_button)
 
         # Add separator line
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
-        side_menu_layout.addWidget(line)
+        line1 = QFrame()
+        line1.setFrameShape(QFrame.HLine)
+        line1.setFrameShadow(QFrame.Sunken)
+        side_menu_layout.addWidget(line1)
 
+        side_menu_layout.addWidget(self.plow_area_label)
         side_menu_layout.addWidget(self.outremont_button)
         side_menu_layout.addWidget(self.verdun_button)
         side_menu_layout.addWidget(self.saint_leonard_button)
         side_menu_layout.addWidget(self.rdp_button)
         side_menu_layout.addWidget(self.plateau_button)
+
+        # Add separator line
+        line2 = QFrame()
+        line2.setFrameShape(QFrame.HLine)
+        line2.setFrameShadow(QFrame.Sunken)
+        side_menu_layout.addWidget(line2)
+
+        side_menu_layout.addWidget(self.area_label)
+        side_menu_layout.addWidget(self.area_input)
+        side_menu_layout.addWidget(self.load_custom_button)
+
+        # Add separator line
+        line3 = QFrame()
+        line3.setFrameShape(QFrame.HLine)
+        line3.setFrameShadow(QFrame.Sunken)
+        side_menu_layout.addWidget(line3)
+
+        side_menu_layout.addWidget(self.number_of_vehicle_label)
+        side_menu_layout.addWidget(self.number_of_vehicle_input)
+        side_menu_layout.addWidget(self.number_of_vehicle_input)
+
         side_menu_layout.addStretch()
+
         side_menu_layout.addWidget(self.recon_button)
         side_menu_layout.addWidget(self.plow_button)
+
         side_menu_layout.addWidget(self.quit_button)
 
         # Create the left side menu widget
@@ -96,14 +156,22 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
 
-        # Store the last area name for subsequent clicks on the "Start" button
+        # Store the last area name for subsequent clicks on the "Load Custom" button
         self.last_area = ""
 
     def quit(self):
         # Close the application when the Quit button is clicked
         QApplication.quit()
 
-    def start(self):
+    def load_area(self, area_arg=None):
+        if self.animation_on:
+            self.text_area.setPlainText(
+                "Animation in process can't load another graph")
+            return
+
+        if area_arg:
+            self.set_area(area_arg)
+
         input_area = self.area_input.text()
 
         if self.last_area == input_area:
@@ -112,36 +180,112 @@ class MainWindow(QMainWindow):
         self.last_area = input_area
 
         try:
-            network = ox.graph_from_place(input_area, network_type='drive')
-            stats = ox.stats.basic_stats(network)
+            network = ox.graph_from_place(input_area, network_type=OSMNX_NETWORK_TYPE)
+            try:
+                self.network = network.to_undirected()
+            except:
+                self.network = network
+
+            stats = ox.stats.basic_stats(self.network)
             stats_str = ""
             for key, value in stats.items():
                 stats_str += f"{key}: {value}\n"
-        except ox.errors.PlaceNotFound:
+        except:
             self.area_input.clear()
             self.area_input.setPlaceholderText(
                 "Invalid area: Please enter a valid area name")
             return
 
         self.text_area.setPlainText(stats_str)
-        self.update_plot_data(network)
+        self.update_plot_data(self.network)
 
     def update_plot_data(self, network):
         self.figure.clear()
 
         ax = self.figure.add_subplot(111)
-        ox.plot_graph(network, ax=ax, node_color='black',
-                      node_size=3, show=False)
+        ox.plot_graph(network, ax=ax, node_color=OSMNX_NODE_COLOR,
+                      node_size=OSMNX_NODE_SIZE, show=False)
 
         self.network_display.draw()
+    
+    def drone_recon(self):
+        self.animation_on = True
+        
+        edges = list(self.network.edges())
+        self.animate_path(edges)
 
-    def clear_plot_data(self):
-        self.figure.clear()
-        self.network_display.draw()
-        self.text_area.clear()
+        stats = {
+            "Distance parcourue" : "TODO",
+            "Cout" : "TODO$"
+        }
+        stats_str = ""
+        for key, value in stats.items():
+            stats_str += f"{key}: {value}\n"
+        self.text_area.setPlainText(stats_str)
+
+    def plow_area(self):
+        n = int(self.number_of_vehicle_input.text())
+        edges = list(self.network.edges())
+        self.animate_path(edges, n)
+
+        stats = {
+            "Distance parcourue" : "TODO",
+            "Cout fixe / vehicule" : "TODO$",
+            "Cout horaire / vehicule" : "TODO$",
+            "Cout horaire supp / vehicule" : "TODO$",
+            "Vitesse du vehicule (km/h)" : "TODO",
+            "Nombre de vehicule": "TODO",
+            "Cout de l'operation" : "TODO$"
+        }
+        stats_str = ""
+        for key, value in stats.items():
+            stats_str += f"{key}: {value}\n"
+        self.text_area.setPlainText(stats_str)
 
     def set_area(self, area):
         self.area_input.setText(area)
+
+    def animate_path(self, path, n=1):
+        n_edges = len(path)
+        edge_colors = np.zeros((n_edges, 3), dtype=int)
+        edge_width = (np.ones(n_edges, dtype=float) * 0.5)
+        duration_second = 10
+        interval_ms = int(duration_second * 1000 / n_edges / n)
+        n_frames = int(n_edges / n)
+
+        frames = []
+
+        def update(frame):
+            indices = np.arange(frame * n, min((frame + 1) * n, n_edges))
+            edge_colors[indices, 1] = 1
+            # edge_width[indices] = 3
+            ax = self.figure.add_subplot(111)
+            ox.plot_graph(self.network, ax=ax, edge_color=edge_colors,
+                        edge_linewidth=edge_width, node_color=OSMNX_NODE_COLOR,
+                        node_size=OSMNX_NODE_SIZE, show=False)
+            self.network_display.draw()
+
+            # Capture the current frame and append it to the list
+            buf = self.figure.canvas.tostring_rgb()
+            w, h = self.figure.canvas.get_width_height()
+            image = PIL.Image.frombytes('RGB', (w, h), buf)
+            frames.append(image)
+
+            # Stop the animation after all frames are captured
+            if frame == n_edges:
+                anim.event_source.stop()
+
+        # Create the animation
+        anim = FuncAnimation(self.figure, update, frames=n_frames+1, interval=interval_ms, repeat=False)
+
+        # Start the animation
+        anim._start()
+
+        # Save the frames as an animated GIF
+        frames[0].save('animation.gif', format='GIF', append_images=frames[1:], save_all=True, duration=interval_ms, loop=0)
+
+        self.animation_on = False
+
 
 
 if __name__ == "__main__":
