@@ -2,6 +2,7 @@ import PIL.Image
 
 import sys
 import osmnx as ox
+import networkx as nx
 
 import matplotlib
 matplotlib.use('Agg') # to avoid pop ups
@@ -17,12 +18,34 @@ from PyQt5.QtGui import QIntValidator
 
 import numpy as np
 
+import random
+
+def node_path2color(G, node_path, node_path_l, edge_colors=None, already_done=0, n=1):
+    """
+    Args
+    G : networkx.graph
+    node_path: list
+    Returns list of int : edge colors
+    """
+    edge_l = list(G.edges())
+    
+    u = node_path[already_done]
+    v = node_path[already_done+1]
+    try:
+        edge_index = edge_l.index((u, v))
+    except:
+        edge_index = edge_l.index((v, u))
+    edge_colors[edge_index] = (1, 0, 0)  # Set edge color to red
+
+    return edge_colors
+
 OSMNX_NETWORK_TYPE = 'drive'
 OSMNX_NODE_SIZE = 1
 OSMNX_NODE_COLOR = 'black'
 QT_MINSIZE_WIDTH = 800
 QT_MINSIZE_HEIGHT = 600
 BIGGER_BUTTON_SCALE_FACTOR = 2
+ANIMATION_DURATION = 5
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -30,6 +53,7 @@ class MainWindow(QMainWindow):
 
         self.animation_on = False
         self.network = None
+        self.edge_colors = None
 
         self.setWindowTitle("ero-2025")
         self.setMinimumSize(QT_MINSIZE_WIDTH, QT_MINSIZE_HEIGHT)
@@ -201,18 +225,18 @@ class MainWindow(QMainWindow):
 
     def update_plot_data(self, network):
         self.figure.clear()
-
         ax = self.figure.add_subplot(111)
         ox.plot_graph(network, ax=ax, node_color=OSMNX_NODE_COLOR,
                       node_size=OSMNX_NODE_SIZE, show=False)
-
         self.network_display.draw()
-    
+
     def drone_recon(self):
         self.animation_on = True
-        
-        edges = list(self.network.edges())
-        self.animate_path(edges)
+
+        u,v = random.choice(list(self.network.nodes)), random.choice(list(self.network.nodes))
+        path = nx.shortest_path(self.network, u, v)
+        print(path)
+        self.animate_path(path)
 
         stats = {
             "Distance parcourue" : "TODO",
@@ -225,8 +249,12 @@ class MainWindow(QMainWindow):
 
     def plow_area(self):
         n = int(self.number_of_vehicle_input.text())
-        edges = list(self.network.edges())
-        self.animate_path(edges, n)
+
+        u,v = random.choice(list(self.network.nodes)), random.choice(list(self.network.nodes))
+        path = nx.shortest_path(self.network, u, v)
+        print(path)
+
+        self.animate_path(path, n)
 
         stats = {
             "Distance parcourue" : "TODO",
@@ -246,23 +274,17 @@ class MainWindow(QMainWindow):
         self.area_input.setText(area)
 
     def animate_path(self, path, n=1):
-        n_edges = len(path)
-        edge_colors = np.zeros((n_edges, 3), dtype=int)
-        edge_width = (np.ones(n_edges, dtype=float) * 0.5)
-        duration_second = 10
-        interval_ms = int(duration_second * 1000 / n_edges / n)
+        n_edges = len(path) - 1
+        self.edge_colors = [(0, 0, 0)] * len(self.network.edges)
+        interval_ms = int(ANIMATION_DURATION * 1000 / n_edges / n)
         n_frames = int(n_edges / n)
-
         frames = []
 
         def update(frame):
-            indices = np.arange(frame * n, min((frame + 1) * n, n_edges))
-            edge_colors[indices, 1] = 1
-            # edge_width[indices] = 3
+            self.edge_colors = node_path2color(self.network, path, n_edges, self.edge_colors, frame, n)
             ax = self.figure.add_subplot(111)
-            ox.plot_graph(self.network, ax=ax, edge_color=edge_colors,
-                        edge_linewidth=edge_width, node_color=OSMNX_NODE_COLOR,
-                        node_size=OSMNX_NODE_SIZE, show=False)
+            ox.plot_graph(self.network, ax=ax, edge_color=self.edge_colors,
+                          node_color=OSMNX_NODE_COLOR, node_size=OSMNX_NODE_SIZE, show=False)
             self.network_display.draw()
 
             # Capture the current frame and append it to the list
@@ -272,7 +294,7 @@ class MainWindow(QMainWindow):
             frames.append(image)
 
             # Stop the animation after all frames are captured
-            if frame == n_edges:
+            if frame == n_edges - 1:
                 anim.event_source.stop()
 
         # Create the animation
