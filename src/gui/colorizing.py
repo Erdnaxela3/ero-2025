@@ -1,6 +1,19 @@
 import numpy as np
 
-EDGE_VISIT_COLOR = np.array([1, 0.5, 0.13])
+# https://colordesigner.io/random-color-generator
+N_COLORS = 10
+COLOR_PALETTE = np.array([
+    [34, 91, 165],
+    [219, 226, 13],
+    [109, 30, 255],
+    [100, 252, 70],
+    [94, 80, 183],
+    [22, 61, 188],
+    [175, 35, 19],
+    [237, 167, 71],
+    [11, 120, 130],
+    [72, 219, 194],
+]) / 255
 
 
 def edge_index_path2color(edge_index_path, edge_colors, already_done=0, n=1):
@@ -23,8 +36,9 @@ def edge_index_path2color(edge_index_path, edge_colors, already_done=0, n=1):
     """
     n_edges = len(edge_index_path)
     step = round(n_edges / n)
-    indices = np.arange(already_done, n_edges, step)
-    edge_colors[edge_index_path[indices]] = EDGE_VISIT_COLOR
+    indices = edge_index_path[np.arange(already_done, n_edges, step)]
+    for i, idx in enumerate(indices):
+        edge_colors[idx] = COLOR_PALETTE[i % N_COLORS]
     return edge_colors
 
 
