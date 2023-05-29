@@ -259,8 +259,7 @@ class MainWindow(QMainWindow):
         print(path)
 
         def update(frame):
-            self.edge_colors = edge_index_path2color(
-                self.network, path, self.edge_colors, frame, n)
+            self.edge_colors = edge_index_path2color(path, self.edge_colors, frame, n)
             ax = self.figure.add_subplot(111)
             ox.plot_graph(self.network, ax=ax, edge_color=self.edge_colors,
                           node_color=OSMNX_NODE_COLOR,
