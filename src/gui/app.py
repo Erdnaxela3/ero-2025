@@ -8,6 +8,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, \
     QWidget, QHBoxLayout, QLineEdit, QLabel, QFrame, QTextEdit
 from PyQt5.QtGui import QIntValidator
+import numpy as np
 
 matplotlib.use('Agg')  # to avoid pop ups
 
@@ -18,7 +19,9 @@ QT_MINSIZE_WIDTH = 800
 QT_MINSIZE_HEIGHT = 600
 BIGGER_BUTTON_SCALE_FACTOR = 2
 ANIMATION_DURATION = 5
-EDGE_VISIT_COLOR = (0.11, 0.5, 0.13)
+EDGE_VISIT_COLOR = np.array([0.11, 0.5, 0.13])
+SECOND_IN_MS = 1000
+
 
 def node_path2color(G, node_path, edge_dict, edge_colors=None, already_done=0, n=1):
     """
@@ -27,7 +30,6 @@ def node_path2color(G, node_path, edge_dict, edge_colors=None, already_done=0, n
     node_path: list
     Returns list of int : edge colors
     """
-
     u = node_path[already_done]
     v = node_path[already_done+1]
     edge_index = edge_dict[(u, v)]
@@ -35,13 +37,14 @@ def node_path2color(G, node_path, edge_dict, edge_colors=None, already_done=0, n
 
     return edge_colors
 
+
 def dict_edge_index(G):
     edge_l = list(G.edges())
     res = dict()
-    for u,v in G.edges():
+    for u, v in G.edges():
         edge_index = edge_l.index((u, v))
-        res[(u,v)] = edge_index
-        res[(v,u)] = edge_index
+        res[(u, v)] = edge_index
+        res[(v, u)] = edge_index
     return res
 
 
@@ -99,7 +102,7 @@ class MainWindow(QMainWindow):
             lambda: self.load_area("Saint-Léonard, Montreal, QC, Canada"))
         self.rdp_button.clicked.connect(
             lambda: self.load_area(
-            "Rivière-des-prairies-pointe-aux-trembles, Montreal, QC, Canada"))
+                "Rivière-des-prairies-pointe-aux-trembles, Montreal, QC, Canada"))
         self.plateau_button.clicked.connect(
             lambda: self.load_area("Le Plateau-Mont-Royal, Montreal, QC, Canada"))
 
@@ -274,8 +277,8 @@ class MainWindow(QMainWindow):
 
     def animate_path(self, path, n=1):
         n_edges = len(path) - 1
-        self.edge_colors = [(0, 0, 0)] * len(self.network.edges)
-        interval_ms = int(ANIMATION_DURATION * 1000 / n_edges / n)
+        self.edge_colors = np.zeros((len(self.network.edges), 3))
+        interval_ms = int(ANIMATION_DURATION * SECOND_IN_MS / n_edges / n)
         n_frames = int(n_edges / n)
         self.edge_dict = dict_edge_index(self.network)
 
