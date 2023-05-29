@@ -1,24 +1,23 @@
-import PIL.Image
-
 import sys
 import osmnx as ox
 import networkx as nx
-
 import matplotlib
-matplotlib.use('Agg') # to avoid pop ups
-
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import matplotlib.animation as animation
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, \
-        QWidget, QHBoxLayout, QLineEdit, QLabel, QFrame, QTextEdit
+    QWidget, QHBoxLayout, QLineEdit, QLabel, QFrame, QTextEdit
 from PyQt5.QtGui import QIntValidator
 
-import numpy as np
+matplotlib.use('Agg')  # to avoid pop ups
 
-import random
+OSMNX_NETWORK_TYPE = 'drive'
+OSMNX_NODE_SIZE = 1
+OSMNX_NODE_COLOR = 'black'
+QT_MINSIZE_WIDTH = 800
+QT_MINSIZE_HEIGHT = 600
+BIGGER_BUTTON_SCALE_FACTOR = 2
+ANIMATION_DURATION = 5
 
 def node_path2color(G, node_path, node_path_l, edge_colors=None, already_done=0, n=1):
     """
@@ -28,24 +27,17 @@ def node_path2color(G, node_path, node_path_l, edge_colors=None, already_done=0,
     Returns list of int : edge colors
     """
     edge_l = list(G.edges())
-    
+
     u = node_path[already_done]
     v = node_path[already_done+1]
     try:
         edge_index = edge_l.index((u, v))
-    except:
+    except ValueError:
         edge_index = edge_l.index((v, u))
-    edge_colors[edge_index] = (1, 0, 0)  # Set edge color to red
+    edge_colors[edge_index] = (0.11, 0.5, 0.13)  # Set edge color to red
 
     return edge_colors
 
-OSMNX_NETWORK_TYPE = 'drive'
-OSMNX_NODE_SIZE = 1
-OSMNX_NODE_COLOR = 'black'
-QT_MINSIZE_WIDTH = 800
-QT_MINSIZE_HEIGHT = 600
-BIGGER_BUTTON_SCALE_FACTOR = 2
-ANIMATION_DURATION = 5
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -61,13 +53,15 @@ class MainWindow(QMainWindow):
         # Create the buttons
         self.drone_recon_label = QLabel("Load Montréal")
         self.montreal_button = QPushButton("Montréal")
-        BIGGER_BUTTON_HEIGHT = self.montreal_button.sizeHint().height() * BIGGER_BUTTON_SCALE_FACTOR
+        BIGGER_BUTTON_HEIGHT = self.montreal_button.sizeHint().height() * \
+            BIGGER_BUTTON_SCALE_FACTOR
 
         self.plow_area_label = QLabel("Load Subject Plow Area")
         self.outremont_button = QPushButton("Outremont")
         self.verdun_button = QPushButton("Verdun")
         self.saint_leonard_button = QPushButton("Saint-Léonard")
-        self.rdp_button = QPushButton("Rivière-des-prairies-pointe-aux-trembles")
+        self.rdp_button = QPushButton(
+            "Rivière-des-prairies-pointe-aux-trembles")
         self.plateau_button = QPushButton("Le Plateau-Mont-Royal")
 
         self.area_label = QLabel("Load Custom area")
@@ -98,7 +92,8 @@ class MainWindow(QMainWindow):
         self.saint_leonard_button.clicked.connect(
             lambda: self.load_area("Saint-Léonard, Montreal, QC, Canada"))
         self.rdp_button.clicked.connect(
-            lambda: self.load_area("Rivière-des-prairies-pointe-aux-trembles, Montreal, QC, Canada"))
+            lambda: self.load_area(
+            "Rivière-des-prairies-pointe-aux-trembles, Montreal, QC, Canada"))
         self.plateau_button.clicked.connect(
             lambda: self.load_area("Le Plateau-Mont-Royal, Montreal, QC, Canada"))
 
@@ -204,17 +199,18 @@ class MainWindow(QMainWindow):
         self.last_area = input_area
 
         try:
-            network = ox.graph_from_place(input_area, network_type=OSMNX_NETWORK_TYPE)
+            network = ox.graph_from_place(
+                input_area, network_type=OSMNX_NETWORK_TYPE)
             try:
                 self.network = network.to_undirected()
-            except:
+            except Exception:
                 self.network = network
 
             stats = ox.stats.basic_stats(self.network)
             stats_str = ""
             for key, value in stats.items():
                 stats_str += f"{key}: {value}\n"
-        except:
+        except Exception:
             self.area_input.clear()
             self.area_input.setPlaceholderText(
                 "Invalid area: Please enter a valid area name")
@@ -233,14 +229,13 @@ class MainWindow(QMainWindow):
     def drone_recon(self):
         self.animation_on = True
 
-        u,v = random.choice(list(self.network.nodes)), random.choice(list(self.network.nodes))
-        path = nx.shortest_path(self.network, u, v)
+        path = nx.approximation.traveling_salesman_problem(self.network)
         print(path)
         self.animate_path(path)
 
         stats = {
-            "Distance parcourue" : "TODO",
-            "Cout" : "TODO$"
+            "Distance parcourue": "TODO",
+            "Cout": "TODO$"
         }
         stats_str = ""
         for key, value in stats.items():
@@ -250,20 +245,18 @@ class MainWindow(QMainWindow):
     def plow_area(self):
         n = int(self.number_of_vehicle_input.text())
 
-        u,v = random.choice(list(self.network.nodes)), random.choice(list(self.network.nodes))
-        path = nx.shortest_path(self.network, u, v)
+        path = nx.approximation.traveling_salesman_problem(self.network)
         print(path)
-
         self.animate_path(path, n)
 
         stats = {
-            "Distance parcourue" : "TODO",
-            "Cout fixe / vehicule" : "TODO$",
-            "Cout horaire / vehicule" : "TODO$",
-            "Cout horaire supp / vehicule" : "TODO$",
-            "Vitesse du vehicule (km/h)" : "TODO",
+            "Distance parcourue": "TODO",
+            "Cout fixe / vehicule": "TODO$",
+            "Cout horaire / vehicule": "TODO$",
+            "Cout horaire supp / vehicule": "TODO$",
+            "Vitesse du vehicule (km/h)": "TODO",
             "Nombre de vehicule": "TODO",
-            "Cout de l'operation" : "TODO$"
+            "Cout de l'operation": "TODO$"
         }
         stats_str = ""
         for key, value in stats.items():
@@ -278,36 +271,29 @@ class MainWindow(QMainWindow):
         self.edge_colors = [(0, 0, 0)] * len(self.network.edges)
         interval_ms = int(ANIMATION_DURATION * 1000 / n_edges / n)
         n_frames = int(n_edges / n)
-        frames = []
 
         def update(frame):
-            self.edge_colors = node_path2color(self.network, path, n_edges, self.edge_colors, frame, n)
+            self.edge_colors = node_path2color(
+                self.network, path, n_edges, self.edge_colors, frame, n)
             ax = self.figure.add_subplot(111)
             ox.plot_graph(self.network, ax=ax, edge_color=self.edge_colors,
-                          node_color=OSMNX_NODE_COLOR, node_size=OSMNX_NODE_SIZE, show=False)
+                          node_color=OSMNX_NODE_COLOR,
+                          node_size=OSMNX_NODE_SIZE, show=False)
             self.network_display.draw()
-
-            # Capture the current frame and append it to the list
-            buf = self.figure.canvas.tostring_rgb()
-            w, h = self.figure.canvas.get_width_height()
-            image = PIL.Image.frombytes('RGB', (w, h), buf)
-            frames.append(image)
 
             # Stop the animation after all frames are captured
             if frame == n_edges - 1:
                 anim.event_source.stop()
 
         # Create the animation
-        anim = FuncAnimation(self.figure, update, frames=n_frames+1, interval=interval_ms, repeat=False)
+        anim = FuncAnimation(
+            self.figure, update, frames=n_frames+1, interval=interval_ms, repeat=False)
 
         # Start the animation
         anim._start()
-
-        # Save the frames as an animated GIF
-        frames[0].save('animation.gif', format='GIF', append_images=frames[1:], save_all=True, duration=interval_ms, loop=0)
+        plt.show()
 
         self.animation_on = False
-
 
 
 if __name__ == "__main__":
