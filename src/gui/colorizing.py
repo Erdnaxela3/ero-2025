@@ -7,8 +7,6 @@ def edge_index_path2color(G, edge_index_path, edge_colors, already_done=0, n=1):
     n_edges = len(edge_index_path)
     step = round(n_edges / n)
     indices = np.arange(already_done, n_edges, step)
-    print(indices)
-    # Set edge color to red
     edge_colors[edge_index_path[indices]] = EDGE_VISIT_COLOR
     return edge_colors
 
