@@ -212,6 +212,9 @@ class MainWindow(QMainWindow):
         self.network_display.draw()
 
     def drone_recon(self):
+        if not self.network:
+            return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
+        
         self.animation_on = True
 
         path = nx.approximation.traveling_salesman_problem(self.network)
@@ -227,6 +230,9 @@ class MainWindow(QMainWindow):
         self.text_area.setPlainText(stats_str)
 
     def plow_area(self):
+        if not self.network:
+            return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
+        
         n = int(self.number_of_vehicle_input.text())
 
         path = nx.approximation.traveling_salesman_problem(self.network)
