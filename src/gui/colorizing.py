@@ -35,7 +35,7 @@ def edge_index_path2color(edge_index_path, edge_colors, already_done=0, n=1):
 
     """
     n_edges = len(edge_index_path)
-    step = round(n_edges / min([1, n, n_edges]))
+    step = round(n_edges / min(n, n_edges))
     indices = edge_index_path[np.arange(already_done, n_edges, step)]
     for i, idx in enumerate(indices):
         edge_colors[idx] = COLOR_PALETTE[i % N_COLORS]

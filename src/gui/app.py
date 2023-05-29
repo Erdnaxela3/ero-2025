@@ -233,7 +233,7 @@ class MainWindow(QMainWindow):
         if not self.network:
             return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
         
-        n = int(self.number_of_vehicle_input.text())
+        n = max(1, int(self.number_of_vehicle_input.text()))
 
         path = nx.approximation.traveling_salesman_problem(self.network)
         self.animate_path(path, n)
