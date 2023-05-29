@@ -85,7 +85,6 @@ def node_path2edge_index(G, node_path):
     """
     edge_path = node_path2edge_path(node_path)
     res = edge_path2edge_index(G, edge_path)
-    print(res)
     return res
 
 

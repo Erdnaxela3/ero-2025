@@ -256,7 +256,6 @@ class MainWindow(QMainWindow):
         n_frames = int(n_edges / n)
 
         path = node_path2edge_index(self.network, path)
-        print(path)
 
         def update(frame):
             self.edge_colors = edge_index_path2color(
