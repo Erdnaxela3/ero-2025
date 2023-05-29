@@ -18,25 +18,31 @@ QT_MINSIZE_WIDTH = 800
 QT_MINSIZE_HEIGHT = 600
 BIGGER_BUTTON_SCALE_FACTOR = 2
 ANIMATION_DURATION = 5
+EDGE_VISIT_COLOR = (0.11, 0.5, 0.13)
 
-def node_path2color(G, node_path, node_path_l, edge_colors=None, already_done=0, n=1):
+def node_path2color(G, node_path, edge_dict, edge_colors=None, already_done=0, n=1):
     """
     Args
     G : networkx.graph
     node_path: list
     Returns list of int : edge colors
     """
-    edge_l = list(G.edges())
 
     u = node_path[already_done]
     v = node_path[already_done+1]
-    try:
-        edge_index = edge_l.index((u, v))
-    except ValueError:
-        edge_index = edge_l.index((v, u))
-    edge_colors[edge_index] = (0.11, 0.5, 0.13)  # Set edge color to red
+    edge_index = edge_dict[(u, v)]
+    edge_colors[edge_index] = EDGE_VISIT_COLOR  # Set edge color to red
 
     return edge_colors
+
+def dict_edge_index(G):
+    edge_l = list(G.edges())
+    res = dict()
+    for u,v in G.edges():
+        edge_index = edge_l.index((u, v))
+        res[(u,v)] = edge_index
+        res[(v,u)] = edge_index
+    return res
 
 
 class MainWindow(QMainWindow):
@@ -271,10 +277,11 @@ class MainWindow(QMainWindow):
         self.edge_colors = [(0, 0, 0)] * len(self.network.edges)
         interval_ms = int(ANIMATION_DURATION * 1000 / n_edges / n)
         n_frames = int(n_edges / n)
+        self.edge_dict = dict_edge_index(self.network)
 
         def update(frame):
             self.edge_colors = node_path2color(
-                self.network, path, n_edges, self.edge_colors, frame, n)
+                self.network, path, self.edge_dict, self.edge_colors, frame, n)
             ax = self.figure.add_subplot(111)
             ox.plot_graph(self.network, ax=ax, edge_color=self.edge_colors,
                           node_color=OSMNX_NODE_COLOR,
