@@ -1,14 +1,16 @@
-import sys
-import osmnx as ox
-import networkx as nx
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import networkx as nx
+import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import osmnx as ox
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, \
     QWidget, QHBoxLayout, QLineEdit, QLabel, QFrame, QTextEdit
 from PyQt5.QtGui import QIntValidator
-import numpy as np
+import sys
+
+from colorizing import edge_index_path2color, node_path2edge_index
 
 matplotlib.use('Agg')  # to avoid pop ups
 
@@ -19,33 +21,7 @@ QT_MINSIZE_WIDTH = 800
 QT_MINSIZE_HEIGHT = 600
 BIGGER_BUTTON_SCALE_FACTOR = 2
 ANIMATION_DURATION = 5
-EDGE_VISIT_COLOR = np.array([0.11, 0.5, 0.13])
 SECOND_IN_MS = 1000
-
-
-def node_path2color(G, node_path, edge_dict, edge_colors=None, already_done=0, n=1):
-    """
-    Args
-    G : networkx.graph
-    node_path: list
-    Returns list of int : edge colors
-    """
-    u = node_path[already_done]
-    v = node_path[already_done+1]
-    edge_index = edge_dict[(u, v)]
-    edge_colors[edge_index] = EDGE_VISIT_COLOR  # Set edge color to red
-
-    return edge_colors
-
-
-def dict_edge_index(G):
-    edge_l = list(G.edges())
-    res = dict()
-    for u, v in G.edges():
-        edge_index = edge_l.index((u, v))
-        res[(u, v)] = edge_index
-        res[(v, u)] = edge_index
-    return res
 
 
 class MainWindow(QMainWindow):
@@ -239,7 +215,6 @@ class MainWindow(QMainWindow):
         self.animation_on = True
 
         path = nx.approximation.traveling_salesman_problem(self.network)
-        print(path)
         self.animate_path(path)
 
         stats = {
@@ -255,7 +230,6 @@ class MainWindow(QMainWindow):
         n = int(self.number_of_vehicle_input.text())
 
         path = nx.approximation.traveling_salesman_problem(self.network)
-        print(path)
         self.animate_path(path, n)
 
         stats = {
@@ -280,15 +254,17 @@ class MainWindow(QMainWindow):
         self.edge_colors = np.zeros((len(self.network.edges), 3))
         interval_ms = int(ANIMATION_DURATION * SECOND_IN_MS / n_edges / n)
         n_frames = int(n_edges / n)
-        self.edge_dict = dict_edge_index(self.network)
+
+        path = node_path2edge_index(self.network, path)
+        print(path)
 
         def update(frame):
-            self.edge_colors = node_path2color(
-                self.network, path, self.edge_dict, self.edge_colors, frame, n)
+            self.edge_colors = edge_index_path2color(
+                self.network, path, self.edge_colors, frame, n)
             ax = self.figure.add_subplot(111)
             ox.plot_graph(self.network, ax=ax, edge_color=self.edge_colors,
                           node_color=OSMNX_NODE_COLOR,
-                          node_size=OSMNX_NODE_SIZE, show=False)
+                          node_size=OSMNX_NODE_SIZE)
             self.network_display.draw()
 
             # Stop the animation after all frames are captured
