@@ -11,7 +11,7 @@ class Report:
 
     def save(self, filename):
         with open(filename, "w") as outfile:
-            json.dump(self.report, outfile, indent=4)
+            json.dump(self.report, outfile, indent=4, ensure_ascii=False)
 
     def __getitem__(self, key):
         return self.report[key]
@@ -30,7 +30,6 @@ class DroneReport(Report):
         n_edges_visited = len(edge_path)
         street_path = []
         for u, v, k in edge_path :
-            print(u, v, k)
             if G[u][v][k] == dict() :
                 k = k - 1
             try:
@@ -60,7 +59,7 @@ class PlowReport(Report):
         self.clear_report()
         total_dist = 0
         n_edges_visited = len(edge_path)
-        step = round(n_edges_visited / min(n, n_edges_visited))
+        step = round(n_edges_visited / n) + 1
 
         vehicles = {}
         for i in range(n):
@@ -71,13 +70,11 @@ class PlowReport(Report):
             vehicles[v_name]["dist"] = 0
             vehicles[v_name]["hours"] = 0
 
-        for turn in range(step):
-            print()
+        for turn in range(step + 1):
+            v_index = 0
             for i in range(turn, n_edges_visited, step):
-                v_index = (i - turn) % step
-                print(v_index, i, turn, step, end=" ")
-                v_name = f"vehicle_{(i - turn) % step}"
-                print(v_name, i, turn, n, (i - turn) % step)
+                print(i, turn, n_edges_visited, step)
+                v_name = f"vehicle_{v_index}"
                 u, v, k = edge_path[i]
                 if G[u][v][k] == dict() :
                     k = k - 1
@@ -89,6 +86,7 @@ class PlowReport(Report):
                 vehicles[v_name]["path"].append(street_name)
                 vehicles[v_name]["dist"] += street_length
                 total_dist += street_length
+                v_index += 1
 
         cumul_cost_h = 0
         for i in range(n):
@@ -109,7 +107,7 @@ class PlowReport(Report):
         self.report['cumul_hour_cost'] = cumul_cost_h
         self.report['cumul_km_cost'] = self.costs['km_cost'] * total_dist
         self.report['total_cost'] = self.report['cumul_fixed_cost'] + \
-            self.report['cumul_hour_cost'] + self.report['cumul_km_cost']
+        self.report['cumul_hour_cost'] + self.report['cumul_km_cost']
         self.report['total_distance'] = total_dist
         self.report['n_visited_street'] = n_edges_visited
         self.report['avg_edge_length'] = total_dist / n_edges_visited
