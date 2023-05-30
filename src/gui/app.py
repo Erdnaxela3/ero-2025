@@ -1,7 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import networkx as nx
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import osmnx as ox
@@ -13,6 +12,7 @@ import sys
 from colorizing import edge_index_path2color, node_path2edge_index
 from cost import DroneCost, PlowCost
 from report import DroneReport, PlowReport
+from graph_manip import eulerian_path
 
 matplotlib.use('Agg')  # to avoid pop ups
 
@@ -219,10 +219,10 @@ class MainWindow(QMainWindow):
 
         costs = DroneCost(100, 0.01)
         report = DroneReport(costs)
-        
+
         self.animation_on = True
 
-        path = nx.approximation.traveling_salesman_problem(self.network)
+        path = eulerian_path(self.network)
 
         report.create_report(self.network, path)
         report.save("drone_report.json")
@@ -241,12 +241,12 @@ class MainWindow(QMainWindow):
     def plow_area(self):
         if not self.network:
             return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
-        
+
         n = max(1, int(self.number_of_vehicle_input.text()))
         costs = PlowCost(100, 1.1, 1.1, 1.3, 8, 10)
         report = PlowReport(costs)
 
-        path = nx.approximation.traveling_salesman_problem(self.network)
+        path = eulerian_path(self.network)
 
         report.create_report(self.network, path, n)
         report.save("plow_report.json")
