@@ -11,6 +11,8 @@ from PyQt5.QtGui import QIntValidator
 import sys
 
 from colorizing import edge_index_path2color, node_path2edge_index
+from cost import DroneCost, PlowCost
+from report import DroneReport, PlowReport
 
 matplotlib.use('Agg')  # to avoid pop ups
 
@@ -214,16 +216,23 @@ class MainWindow(QMainWindow):
     def drone_recon(self):
         if not self.network:
             return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
+
+        costs = DroneCost(100, 0.01)
+        report = DroneReport(costs)
         
         self.animation_on = True
 
         path = nx.approximation.traveling_salesman_problem(self.network)
+
+        report.create_report(self.network, path)
+        report.save("drone_report.json")
         self.animate_path(path)
 
         stats = {
-            "Distance parcourue": "TODO",
-            "Cout": "TODO$"
+            "Distance parcourue": f"{report.report['total_distance']}",
+            "Cout": f"{report.report['total_cost']}$"
         }
+
         stats_str = ""
         for key, value in stats.items():
             stats_str += f"{key}: {value}\n"
@@ -234,18 +243,20 @@ class MainWindow(QMainWindow):
             return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
         
         n = max(1, int(self.number_of_vehicle_input.text()))
+        costs = PlowCost(100, 1.1, 1.1, 1.3, 8, 10)
+        report = PlowReport(costs)
 
         path = nx.approximation.traveling_salesman_problem(self.network)
+
+        report.create_report(self.network, path, n)
+        report.save("plow_report.json")
         self.animate_path(path, n)
 
         stats = {
-            "Distance parcourue": "TODO",
-            "Cout fixe / vehicule": "TODO$",
-            "Cout horaire / vehicule": "TODO$",
-            "Cout horaire supp / vehicule": "TODO$",
-            "Vitesse du vehicule (km/h)": "TODO",
-            "Nombre de vehicule": "TODO",
-            "Cout de l'operation": "TODO$"
+            "Distance parcourue": f"{report.report['total_distance']} km",
+            "Vitesse du vehicule (km/h)": f"{costs['speed']}",
+            "Nombre de vehicule": f"{n}",
+            "Cout de l'operation": f"{report.report['total_cost']}$"
         }
         stats_str = ""
         for key, value in stats.items():
