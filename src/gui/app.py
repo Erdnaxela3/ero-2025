@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 from PyQt5.QtGui import QIntValidator
 import sys
 
-from colorizing import edge_index_path2color, node_path2edge_index
+from colorizing import edge_index_path2color, edge_path2edge_index
 from cost import DroneCost, PlowCost
 from report import DroneReport, PlowReport
 from graph_manip import eulerian_path
@@ -222,9 +222,9 @@ class MainWindow(QMainWindow):
 
         self.animation_on = True
 
-        path = eulerian_path(self.network)
+        self.eulerized, path = eulerian_path(self.network)
 
-        report.create_report(self.network, path)
+        report.create_report(self.eulerized, path)
         report.save("drone_report.json")
         self.animate_path(path)
 
@@ -246,9 +246,9 @@ class MainWindow(QMainWindow):
         costs = PlowCost(100, 1.1, 1.1, 1.3, 8, 10)
         report = PlowReport(costs)
 
-        path = eulerian_path(self.network)
+        self.eulerized, path = eulerian_path(self.network)
 
-        report.create_report(self.network, path, n)
+        report.create_report(self.eulerized, path, n)
         report.save("plow_report.json")
         self.animate_path(path, n)
 
@@ -267,18 +267,17 @@ class MainWindow(QMainWindow):
         self.area_input.setText(area)
 
     def animate_path(self, path, n=1):
-        n_edges = len(path) - 1
-        self.edge_colors = np.zeros((len(self.network.edges), 3))
+        n_edges = len(path)
+        self.edge_colors = np.zeros((len(self.eulerized.edges), 3))
         interval_ms = int(ANIMATION_DURATION * SECOND_IN_MS / n_edges / n)
         n_frames = int(n_edges / n)
-
-        path = node_path2edge_index(self.network, path)
-
+        path = edge_path2edge_index(self.eulerized, path)
+        
         def update(frame):
             self.edge_colors = edge_index_path2color(
                 path, self.edge_colors, frame, n)
             ax = self.figure.add_subplot(111)
-            ox.plot_graph(self.network, ax=ax, edge_color=self.edge_colors,
+            ox.plot_graph(self.eulerized, ax=ax, edge_color=self.edge_colors,
                           node_color=OSMNX_NODE_COLOR,
                           node_size=OSMNX_NODE_SIZE)
             self.network_display.draw()

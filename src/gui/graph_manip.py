@@ -91,7 +91,11 @@ def eulerian_path(G):
     # NOW change this edge path to a node path
     # [1,3,1,4,2]
     # FIXME
-    pass
+    eulerized = nx.eulerize(G) if (not nx.has_eulerian_path(G)) else G
+    
+    eulerian_path = list(nx.eulerian_path(eulerized, keys=True))
+    return eulerized, eulerian_path
+
 
 def evaluate_solution(cost, time, weights):
     """
@@ -136,4 +140,4 @@ def plow_region(region):
     shortest_cpp_path(weighted_graph)
 
 
-drone_recon_montreal()
+#drone_recon_montreal()

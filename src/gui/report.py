@@ -24,18 +24,20 @@ class DroneReport(Report):
     def __init__(self, costs):
         super().__init__(costs)
 
-    def create_report(self, G, node_path):
+    def create_report(self, G, edge_path):
         self.clear_report()
         total_dist = 0
-        n_edges_visited = len(node_path) - 1
+        n_edges_visited = len(edge_path)
         street_path = []
-        for i in range(n_edges_visited):
-            u, v = node_path[i], node_path[i+1]
+        for u, v, k in edge_path :
+            print(u, v, k)
+            if G[u][v][k] == dict() :
+                k = k - 1
             try:
-                street_name = G[u][v][0]['name']
+                street_name = G[u][v][k]['name']
             except KeyError:
                 street_name = "no_name_highway?"
-            street_length = G[u][v][0]['length'] / 1000
+            street_length = G[u][v][k]['length'] / 1000
             street_path.append(street_name)
             total_dist += street_length
         self.report['cumul_fix_cost'] = self.costs["fix_cost"]
@@ -54,10 +56,10 @@ class PlowReport(Report):
         super().__init__(costs)
         self.n = n
 
-    def create_report(self, G, node_path, n=1):
+    def create_report(self, G, edge_path, n=1):
         self.clear_report()
         total_dist = 0
-        n_edges_visited = len(node_path) - 1
+        n_edges_visited = len(edge_path)
         step = round(n_edges_visited / min(n, n_edges_visited))
 
         vehicles = {}
@@ -70,15 +72,20 @@ class PlowReport(Report):
             vehicles[v_name]["hours"] = 0
 
         for turn in range(step):
+            print()
             for i in range(turn, n_edges_visited, step):
-                v_name = f"vehicle_{(i - turn) % n}"
-                print(v_name, i, turn, n, (i - turn) % n)
-                u, v = node_path[i], node_path[i+1]
+                v_index = (i - turn) % step
+                print(v_index, i, turn, step, end=" ")
+                v_name = f"vehicle_{(i - turn) % step}"
+                print(v_name, i, turn, n, (i - turn) % step)
+                u, v, k = edge_path[i]
+                if G[u][v][k] == dict() :
+                    k = k - 1
                 try:
-                    street_name = G[u][v][0]['name']
+                    street_name = G[u][v][k]['name']
                 except KeyError:
                     street_name = "no_name_highway?"
-                street_length = G[u][v][0]['length'] / 1000
+                street_length = G[u][v][k]['length'] / 1000
                 vehicles[v_name]["path"].append(street_name)
                 vehicles[v_name]["dist"] += street_length
                 total_dist += street_length

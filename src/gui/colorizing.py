@@ -3,7 +3,7 @@ import numpy as np
 # https://colordesigner.io/random-color-generator
 N_COLORS = 10
 COLOR_PALETTE = np.array([
-    [34, 91, 165],
+    [255, 120, 0],
     [219, 226, 13],
     [109, 30, 255],
     [100, 252, 70],
@@ -117,10 +117,10 @@ def dict_edge_index(G):
         None
 
     """
-    edge_l = list(G.edges())
+    edge_l = list(G.edges(keys=True))
     res = dict()
-    for u, v in G.edges():
-        edge_index = edge_l.index((u, v))
-        res[(u, v)] = edge_index
-        res[(v, u)] = edge_index
+    for u, v, d in edge_l:
+        edge_index = edge_l.index((u, v, d))
+        res[(u, v, d)] = edge_index
+        res[(v, u, d)] = edge_index
     return res
