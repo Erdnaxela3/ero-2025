@@ -30,11 +30,12 @@ class DroneReport(Report):
         n_edges_visited = len(edge_path)
         street_path = []
         for u, v, k in edge_path :
-            if G[u][v][k] == dict() :
+            while G[u][v][k] == dict() :
                 k = k - 1
             try:
                 street_name = G[u][v][k]['name']
             except KeyError:
+                print(G[u][v])
                 street_name = "no_name_highway?"
             street_length = G[u][v][k]['length'] / 1000
             street_path.append(street_name)
@@ -73,14 +74,14 @@ class PlowReport(Report):
         for turn in range(step + 1):
             v_index = 0
             for i in range(turn, n_edges_visited, step):
-                print(i, turn, n_edges_visited, step)
                 v_name = f"vehicle_{v_index}"
                 u, v, k = edge_path[i]
-                if G[u][v][k] == dict() :
+                while G[u][v][k] == dict() :
                     k = k - 1
                 try:
                     street_name = G[u][v][k]['name']
                 except KeyError:
+                    print(G[u][v])
                     street_name = "no_name_highway?"
                 street_length = G[u][v][k]['length'] / 1000
                 vehicles[v_name]["path"].append(street_name)
