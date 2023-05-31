@@ -13,6 +13,7 @@ from colorizing import edge_index_path2color, edge_path2edge_index
 from cost import DroneCost, PlowCost
 from report import DroneReport, PlowReport
 from graph_manip import eulerian_path
+import pickle
 
 matplotlib.use('Agg')  # to avoid pop ups
 
@@ -223,6 +224,8 @@ class MainWindow(QMainWindow):
         self.animation_on = True
 
         self.eulerized, path = eulerian_path(self.network)
+        pickle.dump(path, open( f"{self.area_input.text().split()[0]}-drone.p", "wb" ) )
+        pickle.dump(path, open( f"{self.area_input.text().split()[0]}-eulerized.p", "wb" ) )
 
         report.create_report(self.eulerized, path)
         report.save("drone_report.json")
@@ -247,6 +250,8 @@ class MainWindow(QMainWindow):
         report = PlowReport(costs)
 
         self.eulerized, path = eulerian_path(self.network)
+        pickle.dump(path, open( f"{self.area_input.text().split(',')[0]}-drone.p", "wb" ) )
+        pickle.dump(path, open( f"{self.area_input.text().split(',')[0]}-eulerized.p", "wb" ) )
 
         report.create_report(self.eulerized, path, n)
         report.save("plow_report.json")
