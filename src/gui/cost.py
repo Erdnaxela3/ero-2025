@@ -29,3 +29,13 @@ class PlowCost(Cost):
         self.costs['overtime_h_cost'] = overtime_h_cost
         self.costs['overtime_h_lim'] = overtime_h_lim
         self.costs['speed'] = speed
+
+
+class VehicleT1Cost(PlowCost):
+    def __init__(self):
+        super().__init__(500, 1.1, 1.1, 1.3, 8, 10)
+
+
+class VehicleT2Cost(PlowCost):
+    def __init__(self):
+        super().__init__(800, 1.3, 1.3, 1.5, 8, 20)

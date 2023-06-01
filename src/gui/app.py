@@ -10,7 +10,7 @@ from PyQt5.QtGui import QIntValidator
 import sys
 
 from colorizing import edge_index_path2color, edge_path2edge_index
-from cost import DroneCost, PlowCost
+from cost import DroneCost, VehicleT1Cost
 from report import DroneReport, PlowReport
 from graph_manip import eulerian_path
 import pickle
@@ -22,6 +22,8 @@ OSMNX_NODE_SIZE = 1
 OSMNX_NODE_COLOR = 'black'
 QT_MINSIZE_WIDTH = 800
 QT_MINSIZE_HEIGHT = 600
+TEXT_AREA_WIDTH = 350
+SIDE_MENU_WIDTH = 250
 BIGGER_BUTTON_SCALE_FACTOR = 2
 ANIMATION_DURATION = 5
 SECOND_IN_MS = 1000
@@ -137,7 +139,7 @@ class MainWindow(QMainWindow):
 
         # Create the left side menu widget
         side_menu_widget = QWidget()
-        side_menu_widget.setMaximumWidth(250)
+        side_menu_widget.setMaximumWidth(SIDE_MENU_WIDTH)
         side_menu_widget.setStyleSheet("background-color: #444444;")
 
         # Set the layout for the side menu widget
@@ -149,7 +151,7 @@ class MainWindow(QMainWindow):
 
         # Create the text area widget
         self.text_area = QTextEdit()
-        self.text_area.setMaximumWidth(350)
+        self.text_area.setMaximumWidth(TEXT_AREA_WIDTH)
         self.text_area.setReadOnly(True)
 
         # Create the main layout
@@ -224,16 +226,18 @@ class MainWindow(QMainWindow):
         self.animation_on = True
 
         self.eulerized, path = eulerian_path(self.network)
-        pickle.dump(path, open( f"{self.area_input.text().split()[0]}-drone.p", "wb" ) )
-        pickle.dump(path, open( f"{self.area_input.text().split()[0]}-eulerized.p", "wb" ) )
+        pickle.dump(path, open(
+            f"{self.area_input.text().split()[0]}-drone.p", "wb"))
+        pickle.dump(path, open(
+            f"{self.area_input.text().split()[0]}-eulerized.p", "wb"))
 
         report.create_report(self.eulerized, path)
         report.save("drone_report.json")
         self.animate_path(path)
 
         stats = {
-            "Distance parcourue": f"{report.report['total_distance']}",
-            "Cout": f"{report.report['total_cost']}$"
+            "Total distance": f"{report.report['total_distance']}",
+            "Total flight cost": f"{report.report['total_cost']}$"
         }
 
         stats_str = ""
@@ -246,22 +250,24 @@ class MainWindow(QMainWindow):
             return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
 
         n = max(1, int(self.number_of_vehicle_input.text()))
-        costs = PlowCost(100, 1.1, 1.1, 1.3, 8, 10)
+        costs = VehicleT1Cost()
         report = PlowReport(costs)
 
         self.eulerized, path = eulerian_path(self.network)
-        pickle.dump(path, open( f"{self.area_input.text().split(',')[0]}-drone.p", "wb" ) )
-        pickle.dump(path, open( f"{self.area_input.text().split(',')[0]}-eulerized.p", "wb" ) )
+        pickle.dump(path, open(
+            f"{self.area_input.text().split(',')[0]}-drone.p", "wb"))
+        pickle.dump(path, open(
+            f"{self.area_input.text().split(',')[0]}-eulerized.p", "wb"))
 
         report.create_report(self.eulerized, path, n)
         report.save("plow_report.json")
         self.animate_path(path, n)
 
         stats = {
-            "Distance parcourue": f"{report.report['total_distance']} km",
-            "Vitesse du vehicule (km/h)": f"{costs['speed']}",
-            "Nombre de vehicule": f"{n}",
-            "Cout de l'operation": f"{report.report['total_cost']}$"
+            "Total distance": f"{report.report['total_distance']} km",
+            "Vehicule speed (km/h)": f"{costs['speed']}",
+            "Number of vehicles": f"{n}",
+            "Operation Total Cost": f"{report.report['total_cost']}$"
         }
         stats_str = ""
         for key, value in stats.items():
@@ -277,7 +283,7 @@ class MainWindow(QMainWindow):
         interval_ms = int(ANIMATION_DURATION * SECOND_IN_MS / n_edges / n)
         n_frames = int(n_edges / n)
         path = edge_path2edge_index(self.eulerized, path)
-        
+
         def update(frame):
             self.edge_colors = edge_index_path2color(
                 path, self.edge_colors, frame, n)

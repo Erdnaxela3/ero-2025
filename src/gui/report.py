@@ -29,13 +29,10 @@ class DroneReport(Report):
         total_dist = 0
         n_edges_visited = len(edge_path)
         street_path = []
-        for u, v, k in edge_path :
-            while G[u][v][k] == dict() :
-                k = k - 1
+        for u, v, k in edge_path:
             try:
                 street_name = G[u][v][k]['name']
             except KeyError:
-                print(G[u][v])
                 street_name = "no_name_highway?"
             street_length = G[u][v][k]['length'] / 1000
             street_path.append(street_name)
@@ -60,7 +57,7 @@ class PlowReport(Report):
         self.clear_report()
         total_dist = 0
         n_edges_visited = len(edge_path)
-        step = round(n_edges_visited / n) + 1
+        step = round(n_edges_visited / n)
 
         vehicles = {}
         for i in range(n):
@@ -71,17 +68,14 @@ class PlowReport(Report):
             vehicles[v_name]["dist"] = 0
             vehicles[v_name]["hours"] = 0
 
-        for turn in range(step + 1):
+        for turn in range(step):
             v_index = 0
             for i in range(turn, n_edges_visited, step):
                 v_name = f"vehicle_{v_index}"
                 u, v, k = edge_path[i]
-                while G[u][v][k] == dict() :
-                    k = k - 1
                 try:
                     street_name = G[u][v][k]['name']
                 except KeyError:
-                    print(G[u][v])
                     street_name = "no_name_highway?"
                 street_length = G[u][v][k]['length'] / 1000
                 vehicles[v_name]["path"].append(street_name)
@@ -108,7 +102,7 @@ class PlowReport(Report):
         self.report['cumul_hour_cost'] = cumul_cost_h
         self.report['cumul_km_cost'] = self.costs['km_cost'] * total_dist
         self.report['total_cost'] = self.report['cumul_fixed_cost'] + \
-        self.report['cumul_hour_cost'] + self.report['cumul_km_cost']
+            self.report['cumul_hour_cost'] + self.report['cumul_km_cost']
         self.report['total_distance'] = total_dist
         self.report['n_visited_street'] = n_edges_visited
         self.report['avg_edge_length'] = total_dist / n_edges_visited
