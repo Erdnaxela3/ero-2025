@@ -1,4 +1,4 @@
 PYTHON=python
 
 gui:
-	python src/gui/app.py
+	python src/app.py
