@@ -31,7 +31,12 @@ def opti(time, money, eulerized, path, nbr_vehicules):
         cumul_hours = (cumul_hours / nbr_vehicules)
 
     indice = (time_coef * (time - cumul_hours) + money_coef * (money - total_cost) / total_cost)
-    print(indice)
+    return indice
 
-opti(2,1000, "Outremont, Monreal, QC, Canada", 2)
+with open("../../Outremont-eulerized.p", "rb") as file:
+    el = pickle.load(file)
 
+with open("../../Outremont-drone.p", "rb") as file:
+    path = pickle.load(file)
+
+print(opti(2,1000, el, path, 2))

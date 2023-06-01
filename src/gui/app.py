@@ -239,7 +239,7 @@ class MainWindow(QMainWindow):
         self.eulerized, path = eulerian_path(self.network)
         pickle.dump(path, open(
             f"{self.area_input.text().split()[0]}-drone.p", "wb"))
-        pickle.dump(path, open(
+        pickle.dump(self.eulerized, open(
             f"{self.area_input.text().split()[0]}-eulerized.p", "wb"))
 
         report.create_report(self.eulerized, path)
@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
         self.eulerized, path = eulerian_path(self.network)
         pickle.dump(path, open(
             f"{self.area_input.text().split(',')[0]}-drone.p", "wb"))
-        pickle.dump(path, open(
+        pickle.dump(self.eulerized, open(
             f"{self.area_input.text().split(',')[0]}-eulerized.p", "wb"))
 
         report.create_report(self.eulerized, path, n)

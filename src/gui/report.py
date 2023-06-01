@@ -106,7 +106,6 @@ class PlowReport(Report):
             ok_cost = round(ceil(ok_time) * self.costs['h_cost'], 2)
             ot_cost = round(ceil(ot_time) * self.costs['overtime_h_cost'], 2)
             h_cost = ok_cost + ot_cost
-            print(self.costs['km_cost'], dist)
             km_cost = round(self.costs['km_cost'] * ceil(dist), 2)
             fix_cost = ceil(hour // 24) * self.costs['fix_cost']
             total = fix_cost + h_cost + km_cost
