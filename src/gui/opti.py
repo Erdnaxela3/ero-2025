@@ -24,13 +24,10 @@ def opti(time, money, eulerized, path, nbr_vehicules):
 
     r = create_config(VEHICULE_1[0],VEHICULE_1[1],VEHICULE_1[2],VEHICULE_1[3],8,VEHICULE_1[4], eulerized, path, nbr_vehicules)
 
-    cumul_hours = r.report['cumul_hours']
+    operation_hours = r.report['operation_duration']
     total_cost = r.report['total_cost']
 
-    if (nbr_vehicules > 1):
-        cumul_hours = (cumul_hours / nbr_vehicules)
-
-    indice = (time_coef * (time - cumul_hours) + money_coef * (money - total_cost) / total_cost)
+    indice = (time_coef * (time - operation_hours) + money_coef * (money - total_cost) / total_cost)
     return indice
 
 with open("../../Outremont-eulerized.p", "rb") as file:
