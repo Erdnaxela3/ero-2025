@@ -1,6 +1,7 @@
 import numpy as np
 import osmnx as ox
 import pickle
+import matplotlib.pyplot as plt
 
 from cost import PlowCost
 from report import PlowReport
@@ -27,13 +28,5 @@ def opti(time, money, eulerized, path, nbr_vehicules):
     operation_hours = r.report['operation_duration']
     total_cost = r.report['total_cost']
 
-    indice = (time_coef * (time - operation_hours) + money_coef * (money - total_cost) / total_cost)
+    indice = (time_coef * (time - operation_hours) + money_coef * (money - total_cost) / money)
     return indice
-
-with open("../../Outremont-eulerized.p", "rb") as file:
-    el = pickle.load(file)
-
-with open("../../Outremont-drone.p", "rb") as file:
-    path = pickle.load(file)
-
-print(opti(2,1000, el, path, 2))

@@ -9,8 +9,8 @@ import numpy as np
 from utils import *
 
 try:
-    el = pickle_load("../../Outremont-eulerized.p")
-    path = pickle_load("../../Outremont-drone.p")
+    el = pickle_load("../../Montreal-eulerized.p")
+    path = pickle_load("../../Montreal-drone.p")
     budget = 1000 #valeur par défaut
     time = 2 #valeur par défaut
     #Recup les arguments
@@ -23,7 +23,7 @@ try:
         budget = int(args.budget)
     if args.time != "" :
         time = int(args.time)
-    graph = [opti(time, budget, el, path, n) for n in range(1,20)]
-    display_graph(graph, str(budget), str(time), "Outremont", 20)
+    graph = [opti(time, budget, el, path, n) for n in range(1, 3000)]
+    display_graph(graph, str(budget), str(time), "Montreal", 3000)
 except FileNotFoundError:
     print("Générer le fichier avant de lancer l'étude")
