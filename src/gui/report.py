@@ -73,11 +73,12 @@ class PlowReport(Report):
         vehicles = {}
         for i in range(n):
             v_name = f"vehicle_{i}"
-            vehicles[v_name] = {}
-            vehicles[v_name]["path"] = []
-            vehicles[v_name]["cost"] = 0
-            vehicles[v_name]["dist"] = 0
-            vehicles[v_name]["hours"] = 0
+            vehicles[v_name] = {
+                "path": [],
+                "cost": 0,
+                "dist": 0,
+                "hours": 0
+            }
 
         sub_paths = split_list(edge_path, n)
         for i in range(n):
@@ -118,7 +119,10 @@ class PlowReport(Report):
         self.report['avg_edge_length'] = total_dist / n_edges_visited
 
         dist_per_v = np.array([vehicles[f"vehicle_{i}"]["dist"] for i in range(n)])
+        hour_per_v = np.array([vehicles[f"vehicle_{i}"]["hours"] for i in range(n)])
+        
         self.report['distance_per_vehicle_std'] = np.std(dist_per_v)
+        self.report['operation_duration'] = np.max(hour_per_v)
 
         self.report['vehicles'] = vehicles
         return self.report
