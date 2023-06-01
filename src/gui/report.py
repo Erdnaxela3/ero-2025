@@ -48,6 +48,7 @@ class DroneReport(Report):
         self.report['path'] = street_path
         return self.report
 
+
 def split_list(lst, n):
     avg = len(lst) // n
     remainder = len(lst) % n
@@ -59,6 +60,7 @@ def split_list(lst, n):
         i += sublist_size
         remainder -= 1
     return result
+
 
 class PlowReport(Report):
     def __init__(self, costs, n=1):
@@ -83,7 +85,7 @@ class PlowReport(Report):
         sub_paths = split_list(edge_path, n)
         for i in range(n):
             v_name = f"vehicle_{i}"
-            for u,v,k in sub_paths[i]:
+            for u, v, k in sub_paths[i]:
                 try:
                     street_name = G[u][v][k]['name']
                 except KeyError:
@@ -92,7 +94,6 @@ class PlowReport(Report):
                 vehicles[v_name]["path"].append(street_name)
                 vehicles[v_name]["dist"] += street_length
                 total_dist += street_length
-
 
         ot_lim = self.costs['overtime_h_lim']
         for i in range(n):
@@ -117,10 +118,14 @@ class PlowReport(Report):
             vehicles[v_name]["h_cost"] = h_cost
             vehicles[v_name]["cost"] = total
 
-        ok_hour = sum([vehicles[f"vehicle_{i}"]["not_overtime_h"] for i in range(n)])
-        ok_cost = sum([vehicles[f"vehicle_{i}"]["not_overtime_cost"] for i in range(n)])
-        ot_hour = sum([vehicles[f"vehicle_{i}"]["overtime_h"] for i in range(n)])
-        ot_cost = sum([vehicles[f"vehicle_{i}"]["overtime_cost"] for i in range(n)])
+        ok_hour = sum(
+            [vehicles[f"vehicle_{i}"]["not_overtime_h"] for i in range(n)])
+        ok_cost = sum(
+            [vehicles[f"vehicle_{i}"]["not_overtime_cost"] for i in range(n)])
+        ot_hour = sum(
+            [vehicles[f"vehicle_{i}"]["overtime_h"] for i in range(n)])
+        ot_cost = sum(
+            [vehicles[f"vehicle_{i}"]["overtime_cost"] for i in range(n)])
 
         self.report['cumul_fixed_cost'] = self.costs["fix_cost"] * n
         self.report['cumul_hours'] = total_dist / self.costs['speed']
@@ -136,9 +141,11 @@ class PlowReport(Report):
         self.report['n_visited_street'] = n_edges_visited
         self.report['avg_edge_length'] = total_dist / n_edges_visited
 
-        dist_per_v = np.array([vehicles[f"vehicle_{i}"]["dist"] for i in range(n)])
-        hour_per_v = np.array([vehicles[f"vehicle_{i}"]["hours"] for i in range(n)])
-        
+        dist_per_v = np.array(
+            [vehicles[f"vehicle_{i}"]["dist"] for i in range(n)])
+        hour_per_v = np.array(
+            [vehicles[f"vehicle_{i}"]["hours"] for i in range(n)])
+
         self.report['distance_per_vehicle_std'] = np.std(dist_per_v)
         self.report['operation_duration'] = float(max(hour_per_v))
 

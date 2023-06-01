@@ -19,6 +19,11 @@ class DroneCost(Cost):
         self.costs['km_cost'] = km_cost
 
 
+class ClassicDroneCost(DroneCost):
+    def __init__(selft):
+        super().__init__(100, 0.01)
+
+
 class PlowCost(Cost):
     def __init__(self, fix_cost, km_cost, h_cost,
                  overtime_h_cost, overtime_h_lim, speed):

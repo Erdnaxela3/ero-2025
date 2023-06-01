@@ -10,7 +10,7 @@ from PyQt5.QtGui import QIntValidator
 import sys
 
 from colorizing import edge_index_path2color, edge_path2edge_index
-from cost import DroneCost, VehicleT1Cost
+from cost import ClassicDroneCost, VehicleT1Cost, VehicleT2Cost
 from report import DroneReport, PlowReport
 from graph_manip import eulerian_path
 import pickle
@@ -65,6 +65,10 @@ class MainWindow(QMainWindow):
         self.number_of_vehicle_input.setPlaceholderText("Enter vehicle number")
         self.number_of_vehicle_input.setText("1")
 
+        self.vehicle_cost = VehicleT1Cost()
+        self.vehicle_t1_button = QPushButton("Vehicle T1")
+        self.vehicle_t2_button = QPushButton("Vehicle T2")
+
         self.recon_button = QPushButton("Drone Recon")
         self.recon_button.setFixedHeight(BIGGER_BUTTON_HEIGHT)
         self.plow_button = QPushButton("Plow Area")
@@ -88,6 +92,8 @@ class MainWindow(QMainWindow):
             lambda: self.load_area("Le Plateau-Mont-Royal, Montreal, QC, Canada"))
 
         self.load_custom_button.clicked.connect(self.load_area)
+        self.vehicle_t1_button.clicked.connect(self.setT1)
+        self.vehicle_t2_button.clicked.connect(self.setT2)
         self.recon_button.clicked.connect(self.drone_recon)
         self.plow_button.clicked.connect(self.plow_area)
         self.quit_button.clicked.connect(self.quit)
@@ -129,6 +135,11 @@ class MainWindow(QMainWindow):
         side_menu_layout.addWidget(self.number_of_vehicle_label)
         side_menu_layout.addWidget(self.number_of_vehicle_input)
         side_menu_layout.addWidget(self.number_of_vehicle_input)
+
+        number_of_vehicle_layout = QHBoxLayout()
+        number_of_vehicle_layout.addWidget(self.vehicle_t1_button)
+        number_of_vehicle_layout.addWidget(self.vehicle_t2_button)
+        side_menu_layout.addLayout(number_of_vehicle_layout)
 
         side_menu_layout.addStretch()
 
@@ -220,7 +231,7 @@ class MainWindow(QMainWindow):
         if not self.network:
             return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
 
-        costs = DroneCost(100, 0.01)
+        costs = ClassicDroneCost(100, 0.01)
         report = DroneReport(costs)
 
         self.animation_on = True
@@ -253,8 +264,7 @@ class MainWindow(QMainWindow):
             return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
 
         n = max(1, int(self.number_of_vehicle_input.text()))
-        costs = VehicleT1Cost()
-        report = PlowReport(costs)
+        report = PlowReport(self.vehicle_cost)
 
         self.eulerized, path = eulerian_path(self.network)
         pickle.dump(path, open(
@@ -287,6 +297,12 @@ class MainWindow(QMainWindow):
 
     def set_area(self, area):
         self.area_input.setText(area)
+
+    def setT1(self):
+        self.vehicle_cost = VehicleT1Cost()
+
+    def setT2(self):
+        self.vehicle_cost = VehicleT2Cost()
 
     def animate_path(self, path, n=1):
         n_edges = len(path)
