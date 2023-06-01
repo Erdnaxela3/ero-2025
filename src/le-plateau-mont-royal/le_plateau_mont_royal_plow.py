@@ -24,6 +24,6 @@ try:
     if args.time != "" :
         time = int(args.time)
     graph = [opti(time, budget, el, path, n) for n in range(1,20)]
-    display_graph(graph, str(budget), str(time), "Le Plateau-Mont-Royal")
+    display_graph(graph, str(budget), str(time), "Le Plateau-Mont-Royal", 20)
 except FileNotFoundError:
     print("Générer le fichier avant de lancer l'étude")
