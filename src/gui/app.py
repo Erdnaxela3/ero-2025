@@ -196,9 +196,9 @@ class MainWindow(QMainWindow):
             except Exception:
                 self.network = network
 
-            stats = ox.stats.basic_stats(self.network)
+            self.stats = ox.stats.basic_stats(self.network)
             stats_str = ""
-            for key, value in stats.items():
+            for key, value in self.stats.items():
                 stats_str += f"{key}: {value}\n"
         except Exception:
             self.area_input.clear()
@@ -236,8 +236,11 @@ class MainWindow(QMainWindow):
         self.animate_path(path)
 
         stats = {
-            "Total distance": f"{report.report['total_distance']}",
-            "Total flight cost": f"{report.report['total_cost']}$"
+            "street_length_total": "{0:.2f}km".format(self.stats["street_length_total"] / 1000),
+            "Total distance traveled": "{0:.2f}km".format(report['total_distance']),
+            "Fixed droned cost": "{0:.2f}km".format(report['cumul_fix_cost']),
+            "Cumul km distance cost": "{0:.2f}$".format(report['cumul_flight_cost']),
+            "Total flight cost": "{0:.2f}$".format(report.report['total_cost'])
         }
 
         stats_str = ""
@@ -264,10 +267,18 @@ class MainWindow(QMainWindow):
         self.animate_path(path, n)
 
         stats = {
-            "Total distance": f"{report.report['total_distance']} km",
-            "Vehicule speed (km/h)": f"{costs['speed']}",
             "Number of vehicles": f"{n}",
-            "Operation Total Cost": f"{report.report['total_cost']}$"
+            "street_length_total": "{0:.2f}km".format(self.stats["street_length_total"] / 1000),
+            "Total distance traveled": "{0:.2f}km".format(report['total_distance']),
+            "Vehicle cumul hours": "{0:.2f}h".format(report['cumul_hours']),
+            "Vehicle cumul non-overtime hours": "{0:.2f}h".format(report['cumul_not_overtime_h']),
+            "Vehicle cumul overtime hours": "{0:.2f}h".format(report['cumul_overtime_h']),
+            "Vehicle fixed cumul cost": "{0:.2f}$".format(report['cumul_fixed_cost']),
+            "Vehicle km cumul cost": "{0:.2f}$".format(report['cumul_km_cost']),
+            "Vehicle cumul non-overtime cost": "{0:.2f}$".format(report['cumul_not_overtime_cost']),
+            "Vehicle cumul overtime cost": "{0:.2f}$".format(report['cumul_overtime_cost']),
+            "Operation Total Cost": "{0:.2f}$".format(report['total_cost']),
+            "Operation Duration": "{0:.2f}h".format(report['operation_duration'])
         }
         stats_str = ""
         for key, value in stats.items():

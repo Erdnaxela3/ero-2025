@@ -94,23 +94,41 @@ class PlowReport(Report):
                 total_dist += street_length
 
 
-        cumul_cost_h = 0
+        ot_lim = self.costs['overtime_h_lim']
         for i in range(n):
             v_name = f"vehicle_{i}"
             dist = vehicles[v_name]["dist"]
             hour = dist / self.costs['speed']
-            ot_lim = self.costs['overtime_h_lim']
-            h_cost = min(ot_lim, hour) * self.costs['h_cost'] + max(
-                0, hour - ot_lim) * self.costs['overtime_h_cost']
+            ot_time = max(0, hour - ot_lim)
+            ok_time = min(ot_lim, hour)
+            ok_cost = ok_time * self.costs['h_cost']
+            ot_cost = ot_time * self.costs['overtime_h_cost']
+            h_cost = ok_cost + ot_cost
             km_cost = self.costs['km_cost'] * dist
-            total = self.costs['fix_cost'] + h_cost + km_cost
+            fix_cost = self.costs['fix_cost']
+            total = fix_cost + h_cost + km_cost
+            vehicles[v_name]["hours"] = ok_time + ot_time
+            vehicles[v_name]["not_overtime_h"] = ok_time
+            vehicles[v_name]["overtime_h"] = ot_time
+            vehicles[v_name]["fix_cost"] = fix_cost
+            vehicles[v_name]["km_cost"] = km_cost
+            vehicles[v_name]["not_overtime_cost"] = ok_cost
+            vehicles[v_name]["overtime_cost"] = ot_cost
+            vehicles[v_name]["h_cost"] = h_cost
             vehicles[v_name]["cost"] = total
-            vehicles[v_name]["hours"] = hour
-            cumul_cost_h += h_cost
+
+        ok_hour = sum([vehicles[f"vehicle_{i}"]["not_overtime_h"] for i in range(n)])
+        ok_cost = sum([vehicles[f"vehicle_{i}"]["not_overtime_cost"] for i in range(n)])
+        ot_hour = sum([vehicles[f"vehicle_{i}"]["overtime_h"] for i in range(n)])
+        ot_cost = sum([vehicles[f"vehicle_{i}"]["overtime_cost"] for i in range(n)])
 
         self.report['cumul_fixed_cost'] = self.costs["fix_cost"] * n
         self.report['cumul_hours'] = total_dist / self.costs['speed']
-        self.report['cumul_hour_cost'] = cumul_cost_h
+        self.report['cumul_not_overtime_h'] = ok_hour
+        self.report['cumul_overtime_h'] = ot_hour
+        self.report['cumul_hour_cost'] = ok_hour + ot_hour
+        self.report['cumul_not_overtime_cost'] = ok_cost
+        self.report['cumul_overtime_cost'] = ot_cost
         self.report['cumul_km_cost'] = self.costs['km_cost'] * total_dist
         self.report['total_cost'] = self.report['cumul_fixed_cost'] + \
             self.report['cumul_hour_cost'] + self.report['cumul_km_cost']
@@ -122,7 +140,7 @@ class PlowReport(Report):
         hour_per_v = np.array([vehicles[f"vehicle_{i}"]["hours"] for i in range(n)])
         
         self.report['distance_per_vehicle_std'] = np.std(dist_per_v)
-        self.report['operation_duration'] = np.max(hour_per_v)
+        self.report['operation_duration'] = float(max(hour_per_v))
 
         self.report['vehicles'] = vehicles
         return self.report
