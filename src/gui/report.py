@@ -1,5 +1,6 @@
 import json
 import numpy as np
+from math import ceil
 
 
 class Report:
@@ -39,7 +40,7 @@ class DroneReport(Report):
             street_path.append(street_name)
             total_dist += street_length
         self.report['cumul_fix_cost'] = self.costs["fix_cost"]
-        self.report['cumul_flight_cost'] = self.costs['km_cost'] * total_dist
+        self.report['cumul_flight_cost'] = round(self.costs['km_cost'] * ceil(total_dist), 2)
         self.report['total_cost'] = self.report['cumul_fix_cost'] + \
             self.report['cumul_flight_cost']
         self.report['total_distance'] = total_dist
@@ -100,13 +101,14 @@ class PlowReport(Report):
             v_name = f"vehicle_{i}"
             dist = vehicles[v_name]["dist"]
             hour = dist / self.costs['speed']
-            ot_time = max(0, hour - ot_lim)
+            ot_time = ceil(max(0, hour - ot_lim))
             ok_time = min(ot_lim, hour)
-            ok_cost = ok_time * self.costs['h_cost']
-            ot_cost = ot_time * self.costs['overtime_h_cost']
+            ok_cost = round(ceil(ok_time) * self.costs['h_cost'], 2)
+            ot_cost = round(ceil(ot_time) * self.costs['overtime_h_cost'], 2)
             h_cost = ok_cost + ot_cost
-            km_cost = self.costs['km_cost'] * dist
-            fix_cost = self.costs['fix_cost']
+            print(self.costs['km_cost'], dist)
+            km_cost = round(self.costs['km_cost'] * ceil(dist), 2)
+            fix_cost = ceil(hour // 24) * self.costs['fix_cost']
             total = fix_cost + h_cost + km_cost
             vehicles[v_name]["hours"] = ok_time + ot_time
             vehicles[v_name]["not_overtime_h"] = ok_time
@@ -126,17 +128,19 @@ class PlowReport(Report):
             [vehicles[f"vehicle_{i}"]["overtime_h"] for i in range(n)])
         ot_cost = sum(
             [vehicles[f"vehicle_{i}"]["overtime_cost"] for i in range(n)])
+        km_cost_cumul = sum(
+            [vehicles[f"vehicle_{i}"]["km_cost"] for i in range(n)])
 
         self.report['cumul_fixed_cost'] = self.costs["fix_cost"] * n
         self.report['cumul_hours'] = total_dist / self.costs['speed']
         self.report['cumul_not_overtime_h'] = ok_hour
         self.report['cumul_overtime_h'] = ot_hour
-        self.report['cumul_hour_cost'] = ok_hour + ot_hour
+        self.report['cumul_hour_cost'] = ok_cost + ot_cost
         self.report['cumul_not_overtime_cost'] = ok_cost
         self.report['cumul_overtime_cost'] = ot_cost
-        self.report['cumul_km_cost'] = self.costs['km_cost'] * total_dist
-        self.report['total_cost'] = self.report['cumul_fixed_cost'] + \
-            self.report['cumul_hour_cost'] + self.report['cumul_km_cost']
+        self.report['cumul_km_cost'] = km_cost_cumul
+        self.report['total_cost'] = round(self.report['cumul_fixed_cost'] + \
+            self.report['cumul_hour_cost'] + self.report['cumul_km_cost'], 2)
         self.report['total_distance'] = total_dist
         self.report['n_visited_street'] = n_edges_visited
         self.report['avg_edge_length'] = total_dist / n_edges_visited

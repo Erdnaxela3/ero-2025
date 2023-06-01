@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
         if not self.network:
             return self.text_area.setPlainText("PLEASE LOAD A GRAPH")
 
-        costs = ClassicDroneCost(100, 0.01)
+        costs = ClassicDroneCost()
         report = DroneReport(costs)
 
         self.animation_on = True
