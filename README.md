@@ -17,13 +17,13 @@ Now, you should have all the requirements to run the program
 *WARNING: The better the computer resources you have, the faster the program is*
 
 
-## How to begin
+## Getting started
 
 To run the program, type this command in the root of the project:
 
     make
 
-It will display an interface with the differents areas that you can load or directly type the name of the town you want to load
+It will run a graphic interface with the differents predefined areas that you can load or you can directly type the name of a custom area you want to load
 
 You can choose :
     
@@ -32,21 +32,22 @@ You can choose :
 - Drone recognition
 - Plow Area : it will plow the area with the number of the vehicle you choose with the type of vehicle you choose
 
-## How to use the interface
+## How to use the GUI
 
-Follow the steps for a good utilisation of the interface :
+Follow the steps for a good use of the interface :
 
-    1. Load a graph - Click on one of the area or type one
-    2. Type the number of the vehicle you want to use
-    3. Select the type of the vehicle
-    4. Choose the mode : Drone Recon / Plow Area
-    5. It will run automatically after the 4th step
+    1. Load a graph - Click on one of the predefined area or type a custom one and click on 'load custom'
+    2. Type the number of the vehicle you want to use (if different from 1)
+    3. Select the type of the vehicle (if different from 2)
+    4. Click on the desired mode : Drone Recon or Plow Area
+    5. Enjoy the animation
 
-Now you can see that, the program is running. It will generate a report called *drone_report.js* or *plow_report* according to the choosen mode and *.p files that we will use later for the case study 
+Now you can see that, the program is running. It will generate a report called *drone_report.js* or *plow_report* according to the choosen mode and *.p pickle file to save the solutions (and avoid reruns)
+These reports contains many informations on the desired operation (cost & time details, path followed by each vehicle, cost & time per vehicle details and much more)
 
 *WARNING: You cannot change the mode or load an other area if the current area is processing - You have to quit the interface with the button QUIT (it will take some time to close) or shut down manually*
 
-If you see some time that the drone or vehicle jumps some road during the process, it's normal because there's two road in one (two way trafic) where it will be colored when he pass the second time
+If you see the animation skipping roads, it's normal because the path visits this road more than once, it will be colored on its last visit
 
 ## How to get the result
 
