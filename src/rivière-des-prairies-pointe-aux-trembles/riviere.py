@@ -13,17 +13,22 @@ try:
     path = pickle_load("../../Rivière-des-prairies-pointe-aux-trembles-drone.p")
     budget = 1000 #valeur par défaut
     time = 2 #valeur par défaut
+    vehicle = 20 #valeur par défaut
     #Recup les arguments
     parser = ArgumentParser()
     parser.add_argument("--budget", required=False, type=str)
     parser.add_argument("--time", required=False, type=str)
+    parser.add_argument("--vehicle", required=False, type=str)
     args = parser.parse_args()
     
     if args.budget != "" : 
         budget = int(args.budget)
     if args.time != "" :
         time = int(args.time)
-    graph = [opti(time, budget, el, path, n) for n in range(1,20)]
-    display_graph(graph, str(budget), str(time), "Rivière-des-prairies-pointe-aux-trembles", 20)
+    if args.vehicle != "" :
+        vehicle = int(args.vehicle)
+        
+    graph = [opti(time, budget, el, path, n) for n in range(1,vehicle + 1)]
+    display_graph(graph, str(budget), str(time), "Rivière-des-prairies-pointe-aux-trembles", vehicle + 1)
 except FileNotFoundError:
     print("Générer le fichier avant de lancer l'étude")
