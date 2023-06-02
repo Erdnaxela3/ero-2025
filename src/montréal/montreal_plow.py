@@ -7,20 +7,26 @@ from opti import opti
 import matplotlib.pyplot as plt
 import numpy as np
 from utils import *
+import osmnx as ox
+from graph_manip import eulerian_path
 
 try:
-    el = pickle_load("../../Montreal-eulerized.p")
-    path = pickle_load("../../Montreal-drone.p")
     budget = 1000 #valeur par défaut
     time = 2 #valeur par défaut
-    vehicle = 3000 #valeur par défaut
+    vehicle = 20 #valeur par défaut
+    load = False
+    
     #Recup les arguments
     parser = ArgumentParser()
+    parser.add_argument("--load", required=False, type=str)
     parser.add_argument("--budget", required=False, type=str)
     parser.add_argument("--time", required=False, type=str)
     parser.add_argument("--vehicle", required=False, type=str)
     args = parser.parse_args()
     
+
+    if args.load != "" :     
+        load = args.load == "True"
     if args.budget != "" : 
         budget = int(args.budget)
     if args.time != "" :
@@ -28,10 +34,16 @@ try:
     if args.vehicle != "" :
         vehicle = int(args.vehicle)
     
-    intervalle = 1
-    if vehicle > 1000 :
-        intervalle = 100
-    graph = [opti(time, budget, el, path, n) for n in range(1, vehicle + 1, intervalle)]
-    display_graph(graph, str(budget), str(time), "Montreal", vehicle + 1, intervalle)
+    if  (not load):
+        network = ox.graph_from_place("Montreal, QC, Canada", network_type="drive")
+        eulerized, path = eulerian_path(network.to_undirected())
+        pickle.dump(path, open("../../Montreal-drone.p", "wb"))
+        pickle.dump(eulerized, open("../../Montreal-eulerized.p", "wb"))
+    else :
+        eulerized= pickle_load("../../Montreal-eulerized.p")
+        path = pickle_load("../../Montreal-drone.p")
+    
+    graph = [opti(time, budget, eulerized, path, n) for n in range(1,vehicle + 1)]
+    display_graph(graph, str(budget), str(time), "Montreal", vehicle + 1)
 except FileNotFoundError:
     print("Générer le fichier avant de lancer l'étude")
