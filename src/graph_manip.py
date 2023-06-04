@@ -60,8 +60,6 @@ def eulerian_path(G):
     # duplicated the edges copy their source for plotting purposes
 
     for u, v, k in eulerian_path:
-        print(eulerized[u][v])
-        print(u,v,k)
         if eulerized[u][v][k] == dict():
             g = k - 1
             while eulerized[u][v][g] == dict():
