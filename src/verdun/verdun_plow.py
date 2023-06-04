@@ -27,9 +27,15 @@ def create_and_save(eulerized, path, cost, filename, n=1):
 
 
 def optimal_vehicle(eulerized, path, time, budget, vehicle=1):
-    graph = [opti(time, budget, eulerized, path, n)
+    graphT1 = [opti(time, budget, eulerized, path, n, type="T1")
              for n in range(1, vehicle + 1)]
-    display_graph(graph, str(budget), str(time), f"{AREA}", vehicle + 1)
+    
+    graphT2 = [opti(time, budget, eulerized, path, n, type="T2")
+             for n in range(1, vehicle + 1)]
+    maxt1, maxt2 = max(graphT1), max(graphT2)
+    graph = graphT1 if maxt1 > maxt2 else graphT2
+    vehicle_type = "T1" if maxt1 > maxt2 else "T2"
+    display_graph(graph, str(budget), str(time), f"{AREA}", vehicle + 1, vehicle_type=vehicle_type)
 
 
 def need_upgrading(eulerized, path, time, budget, n=1):
