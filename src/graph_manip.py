@@ -1,9 +1,10 @@
 import networkx as nx
 
+
 def dfs_edge_path(graph, visited_edges, path):
     last_v = None
-    for u,v,k in graph.edges(keys=True):
-        if (u,v,k) not in visited_edges:
+    for u, v, k in graph.edges(keys=True):
+        if (u, v, k) not in visited_edges:
             if last_v is not None:
                 sp = nx.shortest_path(graph, last_v, u)
                 spe = []
@@ -13,10 +14,10 @@ def dfs_edge_path(graph, visited_edges, path):
                     visited_edges.add(path_e)
                 path += spe
 
-            visited_edges.add((u,v,k))
-            path.append((u,v,k))
+            visited_edges.add((u, v, k))
+            path.append((u, v, k))
             last_v = v
-        
+
 
 def find_edge_path(graph):
     # Initialize visited edges set to keep track of visited edges
@@ -29,6 +30,7 @@ def find_edge_path(graph):
     dfs_edge_path(graph, visited_edges, path)
 
     return path
+
 
 def eulerian_path(G):
     """
@@ -51,7 +53,7 @@ def eulerian_path(G):
         eulerized = G
         eulerian_path = find_edge_path(G)
     else:
-        for u,v,k in G.edges(keys=True):
+        for u, v, k in G.edges(keys=True):
             G[u][v][k]['weight'] = G[u][v][k]['length']
 
         eulerized = nx.eulerize(G) if (not nx.has_eulerian_path(G)) else G
@@ -64,7 +66,7 @@ def eulerian_path(G):
             g = k - 1
             while eulerized[u][v][g] == dict():
                 g = g - 1
-            for key,_ in eulerized[u][v][g].items():
+            for key, _ in eulerized[u][v][g].items():
                 eulerized[u][v][k][key] = eulerized[u][v][g][key]
 
     return eulerized, eulerian_path
