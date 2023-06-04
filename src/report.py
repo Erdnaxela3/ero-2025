@@ -1,7 +1,7 @@
 import json
 import numpy as np
 from math import ceil
-
+import osmnx as ox
 
 class Report:
     def __init__(self, costs):
@@ -30,6 +30,8 @@ class DroneReport(Report):
         self.clear_report()
         total_dist = 0
         n_edges_visited = len(edge_path)
+        basic_stats = ox.basic_stats(G)
+        total_street_length = basic_stats["street_length_total"] / 1000
         street_path = []
         for u, v, k in edge_path:
             try:
@@ -44,6 +46,7 @@ class DroneReport(Report):
             self.costs['km_cost'] * ceil(total_dist), 2)
         self.report['total_cost'] = self.report['cumul_fix_cost'] + \
             self.report['cumul_flight_cost']
+        self.report['total_street_length'] = total_street_length
         self.report['total_distance'] = total_dist
         self.report['n_visited_street'] = n_edges_visited
         self.report['avg_edge_length'] = total_dist / n_edges_visited
@@ -73,6 +76,9 @@ class PlowReport(Report):
         self.clear_report()
         total_dist = 0
         n_edges_visited = len(edge_path)
+        basic_stats = ox.basic_stats(G)
+        total_street_length = basic_stats["street_length_total"] / 1000
+
 
         vehicles = {}
         for i in range(n):
@@ -141,6 +147,7 @@ class PlowReport(Report):
         self.report['cumul_km_cost'] = round(km_cost_cumul, 2)
         self.report['total_cost'] = round(self.report['cumul_fixed_cost'] +
                                           self.report['cumul_hour_cost'] + self.report['cumul_km_cost'], 2)
+        self.report['total_street_length'] = total_street_length
         self.report['total_distance'] = total_dist
         self.report['n_visited_street'] = n_edges_visited
         self.report['avg_edge_length'] = total_dist / n_edges_visited
