@@ -40,7 +40,8 @@ class DroneReport(Report):
             street_path.append(street_name)
             total_dist += street_length
         self.report['cumul_fix_cost'] = self.costs["fix_cost"]
-        self.report['cumul_flight_cost'] = round(self.costs['km_cost'] * ceil(total_dist), 2)
+        self.report['cumul_flight_cost'] = round(
+            self.costs['km_cost'] * ceil(total_dist), 2)
         self.report['total_cost'] = self.report['cumul_fix_cost'] + \
             self.report['cumul_flight_cost']
         self.report['total_distance'] = total_dist
@@ -134,12 +135,12 @@ class PlowReport(Report):
         self.report['cumul_hours'] = total_dist / self.costs['speed']
         self.report['cumul_not_overtime_h'] = ok_hour
         self.report['cumul_overtime_h'] = ot_hour
-        self.report['cumul_hour_cost'] = ok_cost + ot_cost
-        self.report['cumul_not_overtime_cost'] = ok_cost
-        self.report['cumul_overtime_cost'] = ot_cost
-        self.report['cumul_km_cost'] = km_cost_cumul
-        self.report['total_cost'] = round(self.report['cumul_fixed_cost'] + \
-            self.report['cumul_hour_cost'] + self.report['cumul_km_cost'], 2)
+        self.report['cumul_hour_cost'] = round(ok_cost + ot_cost, 2)
+        self.report['cumul_not_overtime_cost'] = round(ok_cost, 2)
+        self.report['cumul_overtime_cost'] = round(ot_cost, 2)
+        self.report['cumul_km_cost'] = round(km_cost_cumul, 2)
+        self.report['total_cost'] = round(self.report['cumul_fixed_cost'] +
+                                          self.report['cumul_hour_cost'] + self.report['cumul_km_cost'], 2)
         self.report['total_distance'] = total_dist
         self.report['n_visited_street'] = n_edges_visited
         self.report['avg_edge_length'] = total_dist / n_edges_visited
