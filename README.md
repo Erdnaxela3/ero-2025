@@ -14,31 +14,31 @@ After that, you need to install all the necessary libraries :
 
 Now, you should have all the requirements to run the program
 
-*WARNING: The better the computer resources you have, the faster the program is*
-
-
 ## Getting started
 
-To run the program, type this command in the root of the project:
+To run Outremont as an example on the GUI, type this command at the root of the project:
 
     make
 
-It will run a graphic interface with the differents predefined areas that you can load or you can directly type the name of a custom area you want to load
+Plowing:
+- Click on the 'Outremont' button to load the area
+- Type any number of vehicles under 'Vehicle number for plowing'
+- Click on 'Plow Area' at the bottom
+- Enjoy the animation
+- 'plow_report.json' has been generated, enjoy the different information provided
 
-You can choose :
-    
-- the number of the vehicle you want to plow the area (default : 1)
-- the type of the vehicle you want to plow the area (default : T1)
-- Drone recognition
-- Plow Area : it will plow the area with the number of the vehicle you choose with the type of vehicle you choose
+Drone:
+- Click on 'Drone Recon'
+- Enjoy the animation
+- 'drone_report.json' has been generated, enjoy the different information provided
 
 ## How to use the GUI
 
 Follow the steps for a good use of the interface :
 
     1. Load a graph - Click on one of the predefined area or type a custom one and click on 'load custom'
-    2. Type the number of the vehicle you want to use (if different from 1)
-    3. Select the type of the vehicle (if different from 2)
+    2. Type the number of the vehicle you want to use (if your choice is different from 1)
+    3. Select the type of the vehicle (if your choice is different from T1)
     4. Click on the desired mode : Drone Recon or Plow Area
     5. Enjoy the animation
 
@@ -49,53 +49,68 @@ These reports contains many informations on the desired operation (cost & time d
 
 If you see the animation skipping roads, it's normal because the path visits this road more than once, it will be colored on its last visit
 
-## How to get the result
+## User Stories
 
 For a case study in a pre-defined location with specific parameters, follow this steps :
 
-    1. You have to get the *.p for the location
-    2. Run the interface and load the location
-    3. Click on Plow Area (number and type of vehicle doesn't matter )
-    3.1 Once the .p file has been generated, you can close the interface, no need to see the path
-    4. Go to the repository of the case study 
+    1. Go to the repository of the desired case study 
        For example :
         cd src/outremont/
-    
-    5. Now, it's time to generate the study case
-        
-        5.1 Type this command to have directly the result with default value budget : 1000 Time : 2 Vehicle (range max vehicle) : 20
+        cd src/le-plateau-mont-royal/
+        cd src/rivière-des-prairies-pointe-aux-trembles/
+        cd src/saint-léonard/
+        cd src/verdun/
+    2. Follow the instruction in the according section for your desired result:
+        - What path should my N vehicles take?
+        - Should I upgrade my fleet to T2 vehicles?
+        - How many vehicles should i buy?
 
-            make
-        
-        5.1.1 If you wish to specify parameters the variable BUDGET TIME VEHICLE can help you :
-            
-            make BUDGET=10000 TIME=2 VEHICLE=30
-        
-        Here we want a case study with 10000 budget, 2 time and max range 30 vehicle
+# What path should my N vehicles take?
 
-A graph will pop up and will show you the best option of this case. You could also the find the result in .png in the directory.
+You have N=40 T1 vehicles for example. What path should they take each?
 
-*WARNING*: Careful about the parameters, the more you ask, the longer it takes
+    python outremont_plow.py --report 40 T1
 
-## Support
+For T2 vehicles
 
-paul.guan@epita.fr
+    python outremont_plow.py --report 40 T2
 
-alexandre.weng@epita.fr
+If you already ran the command you can speed it by adding the --load option. (It uses the pickle file with the solutions saved)
 
-william.ye@epita.fr
+    python outremont_plow.py --report 20 T1 --load
 
-lalariniaina-prisca.ramanantoanina@epita.fr
+The command generated a report in JSON format. The report contains the path that each vehicle should take, from start to finish.
 
+# Should I upgrade my fleet to T2 vehicles? / keep T1 / downgrade to T1
+
+You have N=40 T1 vehicles for example. My time constraint is 3 hours and budget is 10000$ Should i upgrade them to T2?
+If not specified, default time will be 2 hours and budget 1000$.
+
+    python outremont_plow.py --upgrade 40 --time 3 --budget 10000
+
+A message will be printed suggesting upgrading or not. Two reports will also be generated so you can compare the two options.
+You can use the same --load option to speed up the process if the *.p files have been generated.
+
+# How many vehicles should i buy?
+
+For example, you have a budget of 10000$, a time constraint of 3 hours, you are willing to buy up to 30 vehicles.
+If not specified, default time will be 2 hours, default budget 1000$, default number of vehicle 20.
+
+    python outremont_plow.py --optimal --time 3 --budget 10000 --vehicle 30
+
+A chart will pop up and will show you the best option for this case. You could also find the result in .png format.
+You can use the same --load option to speed up the process if the *.p files have been generated.
+
+*WARNING*: Be careful about the parameters, the more vehicles you ask, the longer it takes
 
 ## Authors and acknowledgment
-Paul GUAN
+Paul GUAN <paul.guan@epita.fr>
 
-Lalariniaina Prisca RAMANANTIANINA
+Lalariniaina Prisca RAMANANTIANINA <lalariniaina-prisca.ramanantoanina@epita.fr>
 
-Alexandre WENG
+Alexandre WENG <alexandre.weng@epita.fr>
 
-William YE
+William YE <william.ye@epita.fr>
 
 ## License
 PRIVATE
