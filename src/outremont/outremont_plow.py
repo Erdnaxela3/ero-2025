@@ -1,6 +1,3 @@
-from utils import pickle_load, display_graph
-from opti import opti
-from graph_manip import eulerian_path
 from argparse import ArgumentParser
 import argparse
 import osmnx as ox
@@ -8,6 +5,9 @@ import pickle
 import sys
 
 sys.path.append('..')
+from utils import pickle_load, display_graph
+from opti import opti
+from graph_manip import eulerian_path
 
 AREA = "Outremont"
 MONTREAL_QC = "Montreal, QC, Canada"
@@ -50,7 +50,7 @@ if __name__ == '__main__':
             eulerized = pickle_load(f"{AREA}-eulerized.p")
             path = pickle_load(f"{AREA}-path.p")
         except FileNotFoundError:
-            print("Générer le fichier avant de lancer l'étude")
+            raise Exception(f"Please use --load or -l only if {AREA}-path.p and {AREA}-eulerized.p have been generated")
 
     graph = [opti(time, budget, eulerized, path, n)
              for n in range(1, vehicle + 1)]
