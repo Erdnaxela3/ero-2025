@@ -23,7 +23,7 @@ def display_graph(scores, budget, time, place, max_vehicule, intervalle=1, vehic
     plt.axvline(x=max_score_index, color='r', linestyle='--')
     plt.axhline(y=max_score, color='r', linestyle='--')
 
-    plt.text(1, min(scores) - 0.5, "On remarque que la meilleur option est de " + str(max_score_index) + f" véhicules {vehicle_type} pour " + place + " avec un budget de " + budget + ' et un temps de ' + time
+    plt.text(1, min(scores) - 0.5, "On remarque que la meilleur option est de " + str(max_score_index) + f" véhicules {vehicle_type} pour " + place + " avec un budget de " + budget + '€ et un temps de ' + time
              + " heures ", fontsize=10, ha='left')
     plt.figtext(0.5, -0.1, 'Text at the bottom', fontsize=10, ha='center')
 
