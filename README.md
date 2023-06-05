@@ -69,15 +69,15 @@ For a case study in a pre-defined location with specific parameters, follow this
 
 You have N=40 T1 vehicles for example. What path should they take each?
 
-    python outremont_plow.py --report 40 T1
+    python3 outremont_plow.py --report 40 T1
 
 For T2 vehicles
 
-    python outremont_plow.py --report 40 T2
+    python3 outremont_plow.py --report 40 T2
 
 If you already ran the command you can speed it by adding the --load option. (It uses the pickle file with the solutions saved)
 
-    python outremont_plow.py --report 20 T1 --load
+    python3 outremont_plow.py --report 20 T1 --load
 
 The command generated a report in JSON format. The report contains the path that each vehicle should take, from start to finish.
 
@@ -86,7 +86,7 @@ The command generated a report in JSON format. The report contains the path that
 You have N=40 T1 vehicles for example. My time constraint is 3 hours and budget is 10000$ Should i upgrade them to T2?
 If not specified, default time will be 2 hours and budget 1000$.
 
-    python outremont_plow.py --upgrade 40 --time 3 --budget 10000
+    python3 outremont_plow.py --upgrade 40 --time 3 --budget 10000
 
 A message will be printed suggesting upgrading or not. Two reports will also be generated so you can compare the two options.
 You can use the same --load option to speed up the process if the *.p files have been generated.
@@ -96,7 +96,7 @@ You can use the same --load option to speed up the process if the *.p files have
 For example, you have a budget of 10000$, a time constraint of 3 hours, you are willing to buy up to 30 vehicles.
 If not specified, default time will be 2 hours, default budget 1000$, default number of vehicle 20.
 
-    python outremont_plow.py --optimal --time 3 --budget 10000 --vehicle 30
+    python3 outremont_plow.py --optimal --time 3 --budget 10000 --vehicle 30
 
 A chart will pop up and will show you the best option for this case. You could also find the result in .png format.
 You can use the same --load option to speed up the process if the *.p files have been generated.
