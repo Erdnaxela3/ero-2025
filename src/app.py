@@ -249,9 +249,9 @@ class MainWindow(QMainWindow):
         stats = {
             "street_length_total": "{0:.2f}km".format(self.stats["street_length_total"] / 1000),
             "Total distance traveled": "{0:.2f}km".format(report['total_distance']),
-            "Fixed droned cost": "{0:.2f}km".format(report['cumul_fix_cost']),
-            "Cumul km distance cost": "{0:.2f}$".format(report['cumul_flight_cost']),
-            "Total flight cost": "{0:.2f}$".format(report.report['total_cost'])
+            "Fixed droned cost": "{0:.2f}€".format(report['cumul_fix_cost']),
+            "Cumul km distance cost": "{0:.2f}€".format(report['cumul_flight_cost']),
+            "Total flight cost": "{0:.2f}€".format(report.report['total_cost'])
         }
 
         stats_str = ""
@@ -283,11 +283,11 @@ class MainWindow(QMainWindow):
             "Vehicle cumul hours": "{0:.2f}h".format(report['cumul_hours']),
             "Vehicle cumul non-overtime hours": "{0:.2f}h".format(report['cumul_not_overtime_h']),
             "Vehicle cumul overtime hours": "{0:.2f}h".format(report['cumul_overtime_h']),
-            "Vehicle fixed cumul cost": "{0:.2f}$".format(report['cumul_fixed_cost']),
-            "Vehicle km cumul cost": "{0:.2f}$".format(report['cumul_km_cost']),
-            "Vehicle cumul non-overtime cost": "{0:.2f}$".format(report['cumul_not_overtime_cost']),
-            "Vehicle cumul overtime cost": "{0:.2f}$".format(report['cumul_overtime_cost']),
-            "Operation Total Cost": "{0:.2f}$".format(report['total_cost']),
+            "Vehicle fixed cumul cost": "{0:.2f}€".format(report['cumul_fixed_cost']),
+            "Vehicle km cumul cost": "{0:.2f}€".format(report['cumul_km_cost']),
+            "Vehicle cumul non-overtime cost": "{0:.2f}€".format(report['cumul_not_overtime_cost']),
+            "Vehicle cumul overtime cost": "{0:.2f}€".format(report['cumul_overtime_cost']),
+            "Operation Total Cost": "{0:.2f}€".format(report['total_cost']),
             "Operation Duration": "{0:.2f}h".format(report['operation_duration'])
         }
         stats_str = ""

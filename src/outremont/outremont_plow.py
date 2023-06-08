@@ -44,7 +44,7 @@ def need_upgrading(eulerized, path, time, budget, n=1):
     scoreT1 = opti(time, budget, eulerized, path, n, "T1")
     scoreT2 = opti(time, budget, eulerized, path, n, "T2")
 
-    return scoreT1 >= scoreT2
+    return scoreT2 >= scoreT1
 
 
 def reporting(eulerized, path, cost, n=1, type="T1"):
