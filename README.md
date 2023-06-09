@@ -113,7 +113,7 @@ Alexandre WENG <alexandre.weng@epita.fr>
 William YE <william.ye@epita.fr>
 
 ## License
-PRIVATE
+PRIVATE FOR EPITA - Don't cheat 
 
 ## Project status
 ONGOING ...
